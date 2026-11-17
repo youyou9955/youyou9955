@@ -47,7 +47,10 @@ Puis dans Studio : plugin Rojo -> Connect.
 
 ## La ville (map)
 
-Générée par les scripts `tools/city/*.luau` (à exécuter dans Studio, dans l'ordre 01 → 09 ; `01_Setup` efface et reconstruit tout).
+Générée par les scripts `tools/city/*.luau` (à exécuter dans Studio, dans l'ordre 01 → 12 ; `01_Setup` efface et reconstruit tout).
+
+- `10_Meshy` et `12_MeshyMore` remplacent les blocs par les modèles Meshy AI rangés dans `ReplicatedStorage.Assets.City` (maisons A à E, maison de ville, tours Office/OfficeB/OfficeC, boutiques Shop/ShopB/ShopC, entrepôt, arbres, palmier, lampadaire, banc, poubelle, bouche d'incendie, boîte aux lettres, buisson, jardinière, vache, abri de bus, socle de panneau, conteneur). Fichiers .glb dans `Documents\WrongWayDelivery\models\city` et `city2`.
+- `11_Signs` donne aux panneaux un style moderne (plaque arrondie, dégradé, liseré, dos en métal, poteaux avec capuchon).
 Tout est rangé dans `Workspace.Map` : `Roads/` (MainRoads, SecondaryRoads, Intersections, Sidewalks, RoadMarkings, Bridges, Signs), `Districts/` (Downtown, Residential, Industrial, Commercial, Hillside, Outskirts), `Headquarters`, `Landmarks`, `Vegetation`, `StreetFurniture`, `LightingObjects`, `DeliveryZones` (repères tagués `DeliveryZone`), `Spawns`.
 
 - Grille de 6 x 6 îlots (axes tous les 160 studs), avenues de 44 studs, rond-point central, 48 carrefours avec feux ou STOP.
