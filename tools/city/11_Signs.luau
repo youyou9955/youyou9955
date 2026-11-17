@@ -1,180 +1,216 @@
 --!nolint
--- 11 : panneaux plus stylés. Repasse sur tous les SurfaceGui de la map (faces avant/arrière) :
--- cadre sombre, plaque arrondie avec dégradé, liseré clair, reflet, texte arrondi avec contour.
--- Idempotent (attribut Styled). Les panneaux STOP gardent leur forme octogonale.
+-- 11 : panneaux façon vraie signalisation.
+-- Panneaux routiers (poteaux, limitations, entrées de quartier, arrêts de bus, zones de livraison) :
+-- tôle plate couleur réglementaire, liseré intérieur fin de la couleur du texte, coins légèrement
+-- arrondis, police de signalisation (Arimo gras), dos en aluminium brut, poteaux en acier galvanisé.
+-- STOP : vrai octogone rouge à bord blanc. Enseignes et panneaux publicitaires : plaque simple.
+-- Idempotent ; retire aussi l'ancien style « cartoon » (dégradés, reflets, capuchons orange).
 local Lib = require(script.Parent.Lib)
 local V = Vector3.new
 local PPS = 40
-local FRAME = Color3.fromRGB(58, 62, 70)
+local ALU = Color3.fromRGB(188, 190, 194)
+local STEEL = Color3.fromRGB(160, 163, 168)
+local FONT = Font.new("rbxasset://fonts/families/Arimo.json", Enum.FontWeight.Bold)
+local ROAD = { PostSign = true, SpeedLimit = true, Welcome = true, BusStop = true }
 
-local function shade(c, k)
-	local h, s, v = c:ToHSV()
-	return Color3.fromHSV(h, math.clamp(s * (k > 1 and 0.85 or 1.05), 0, 1), math.clamp(v * k, 0, 1))
-end
-
-local function corner(parent, px)
-	local u = Instance.new("UICorner")
-	u.CornerRadius = UDim.new(0, px)
-	u.Parent = parent
-end
-
-local function style(g, part, bg)
-	local label = g:FindFirstChildOfClass("TextLabel")
-	if not label then
-		return false
+local function isRoadSign(part)
+	local a = part.Parent
+	while a and a ~= workspace do
+		if ROAD[a.Name] or string.sub(a.Name, 1, 13) == "DeliveryZone_" then
+			return true
+		end
+		if a.Name == "Signs" and a.Parent and a.Parent.Name == "Roads" then
+			return true
+		end
+		a = a.Parent
 	end
-	local face = g.Face
-	local sz = part.Size
-	local w, h
+	return false
+end
+
+-- Retire l'ancien habillage (version précédente de cette passe)
+local function strip(map)
+	for _, d in map:GetDescendants() do
+		if d:IsA("SurfaceGui") then
+			if d.Name == "BackPlate" then
+				d:Destroy()
+			else
+				local panel = d:FindFirstChild("Panel")
+				if panel then
+					local label = panel:FindFirstChildOfClass("TextLabel")
+					if label then
+						label.Parent = d
+					end
+					panel:Destroy()
+				end
+				local border = d:FindFirstChild("Border")
+				if border then
+					border:Destroy()
+				end
+				local label = d:FindFirstChildOfClass("TextLabel")
+				if label then
+					for _, s in label:GetChildren() do
+						if s:IsA("UIStroke") then
+							s:Destroy()
+						end
+					end
+				end
+				d:SetAttribute("Styled", nil)
+			end
+		elseif d:IsA("BasePart") then
+			if d.Name == "PostCap" or d.Name == "PostBase" or d.Name == "SignBack" then
+				d:Destroy()
+			else
+				local pc = d:GetAttribute("PanelColor")
+				if pc then
+					d.Color = pc
+					d.Material = Enum.Material.SmoothPlastic
+				end
+				for _, a in { "Framed", "BackPlated", "Capped", "PanelColor" } do
+					d:SetAttribute(a, nil)
+				end
+			end
+		end
+	end
+end
+
+local function faceDims(part, face)
+	local s = part.Size
 	if face == Enum.NormalId.Front or face == Enum.NormalId.Back then
-		w, h = sz.X, sz.Y
+		return s.X, s.Y
 	elseif face == Enum.NormalId.Left or face == Enum.NormalId.Right then
-		w, h = sz.Z, sz.Y
-	else
-		return false
+		return s.Z, s.Y
 	end
-	if w < 1 or h < 0.6 then
+end
+
+local function roadStyle(g, part)
+	local label = g:FindFirstChildOfClass("TextLabel")
+	local w, h = faceDims(part, g.Face)
+	if not label or not w or w < 1 or h < 0.6 then
 		return false
 	end
 	g.PixelsPerStud = PPS
-	local margin = math.clamp(math.min(w, h) * 0.06, 0.08, 0.35) * PPS
-	local radius = math.min(w, h) * 0.16 * PPS
-
-	local panel = Instance.new("Frame")
-	panel.Name = "Panel"
-	panel.AnchorPoint = Vector2.new(0.5, 0.5)
-	panel.Position = UDim2.fromScale(0.5, 0.5)
-	panel.Size = UDim2.new(1, -margin * 2, 1, -margin * 2)
-	panel.BackgroundColor3 = bg
-	panel.BorderSizePixel = 0
-	corner(panel, radius)
-	local grad = Instance.new("UIGradient")
-	grad.Rotation = 90
-	grad.Color = ColorSequence.new({
-		ColorSequenceKeypoint.new(0, shade(bg, 1.25)),
-		ColorSequenceKeypoint.new(0.55, bg),
-		ColorSequenceKeypoint.new(1, shade(bg, 0.7)),
-	})
-	grad.Parent = panel
+	g.LightInfluence = 1
+	label.BackgroundTransparency = 1
+	label.FontFace = FONT
+	label.TextScaled = true
+	local m = math.min(w, h)
+	local inset = math.clamp(m * 0.06, 0.08, 0.3) * PPS
+	local border = Instance.new("Frame")
+	border.Name = "Border"
+	border.BackgroundTransparency = 1
+	border.AnchorPoint = Vector2.new(0.5, 0.5)
+	border.Position = UDim2.fromScale(0.5, 0.5)
+	border.Size = UDim2.new(1, -inset * 2, 1, -inset * 2)
 	local stroke = Instance.new("UIStroke")
 	stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-	stroke.Color = Color3.new(1, 1, 1)
-	stroke.Transparency = 0.15
-	stroke.Thickness = math.max(2, math.min(w, h) * 0.05 * PPS)
-	stroke.Parent = panel
-	-- reflet en haut
-	local shine = Instance.new("Frame")
-	shine.Name = "Shine"
-	shine.BackgroundColor3 = Color3.new(1, 1, 1)
-	shine.BackgroundTransparency = 0.86
-	shine.BorderSizePixel = 0
-	shine.Position = UDim2.fromScale(0.02, 0.04)
-	shine.Size = UDim2.fromScale(0.96, 0.38)
-	corner(shine, radius * 0.8)
-	shine.Parent = panel
-	panel.Parent = g
-
-	label.Parent = panel
-	label.ZIndex = 2
-	label.BackgroundTransparency = 1
-	label.Font = Enum.Font.FredokaOne
-	local ts = Instance.new("UIStroke")
-	ts.ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
-	ts.Color = shade(bg, 0.35)
-	ts.Thickness = math.max(1.5, h * 0.04 * PPS)
-	ts.Transparency = 0.25
-	ts.Parent = label
+	stroke.Color = label.TextColor3
+	stroke.Thickness = math.max(2, m * 0.035 * PPS)
+	stroke.Parent = border
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0, m * 0.07 * PPS)
+	corner.Parent = border
+	border.Parent = g
+	local pad = label:FindFirstChildOfClass("UIPadding")
+	if pad then
+		pad.PaddingLeft = UDim.new(0.07, 0)
+		pad.PaddingRight = UDim.new(0.07, 0)
+		pad.PaddingTop = UDim.new(0.14, 0)
+		pad.PaddingBottom = UDim.new(0.14, 0)
+	end
 	return true
 end
 
 return function()
 	local map = workspace.Map
-	local n, frames = 0, 0
+	strip(map)
+	local road, other, backs = 0, 0, 0
+	local plates = {}
 	for _, g in map:GetDescendants() do
-		if g:IsA("SurfaceGui") and not g:GetAttribute("Styled") then
+		if g:IsA("SurfaceGui") and g.Name ~= "BackPlate" then
 			local part = g.Parent
-			local model = part and part.Parent
 			local label = g:FindFirstChildOfClass("TextLabel")
-			if part and part:IsA("BasePart") and label then
+			if part and part:IsA("BasePart") and label and part.Name ~= "Pad" and part.Name ~= "HouseNumber" then
+				local model = part.Parent
 				if model and model.Name == "StopSign" then
-					label.Font = Enum.Font.FredokaOne
-					g:SetAttribute("Styled", true)
-				elseif part.Name ~= "Pad" then
-					local bg = part:GetAttribute("PanelColor") or (label.BackgroundTransparency < 1 and label.BackgroundColor3) or part.Color
-					if style(g, part, bg) then
-						g:SetAttribute("Styled", true)
-						if not part:GetAttribute("Framed") and part.Material ~= Enum.Material.Neon then
-							part:SetAttribute("Framed", true)
-							part:SetAttribute("PanelColor", bg)
-							part.Color = FRAME
-							part.Material = Enum.Material.Metal
-							frames += 1
-						end
-						n += 1
+					label.FontFace = FONT
+				elseif isRoadSign(part) then
+					if roadStyle(g, part) then
+						road += 1
+						plates[part] = plates[part] or {}
+						plates[part][g.Face] = true
+						part.Material = Enum.Material.SmoothPlastic
+						part.Reflectance = 0.04
+					end
+				else
+					-- enseigne : plaque simple, texte net
+					label.TextScaled = true
+					if label.Font == Enum.Font.FredokaOne then
+						label.Font = Enum.Font.GothamBlack
+					end
+					g.PixelsPerStud = 24
+					other += 1
+				end
+			end
+			Lib.yield(1)
+		end
+	end
+
+	-- dos en aluminium brut pour les panneaux simple face
+	for part, faces in plates do
+		local front = faces[Enum.NormalId.Front]
+		local back = faces[Enum.NormalId.Back]
+		if (front and not back) or (back and not front) then
+			local off = (front and 1 or -1) * (part.Size.Z / 2 + 0.03)
+			local b = Lib.deco(part.Parent, part.CFrame * CFrame.new(0, 0, off), V(part.Size.X, part.Size.Y, 0.05), ALU, Enum.Material.Metal, { Name = "SignBack" })
+			backs += 1
+		end
+	end
+
+	-- poteaux en acier galvanisé
+	local poles = 0
+	for _, m in map:GetDescendants() do
+		if m:IsA("Model") and (m.Name == "PostSign" or m.Name == "Welcome" or m.Name == "SpeedLimit" or m.Name == "StopSign") then
+			for _, p in m:GetChildren() do
+				if p:IsA("BasePart") and p.Size.Y > 3 and p.Size.X <= 0.7 and p.Size.Z <= 0.7 then
+					p.Color = STEEL
+					p.Material = Enum.Material.Metal
+					poles += 1
+				end
+			end
+		end
+	end
+
+	-- STOP : octogone régulier (deux carrés à 45°) + bord blanc
+	local stops = 0
+	for _, m in map:GetDescendants() do
+		if m:IsA("Model") and m.Name == "StopSign" and not m:GetAttribute("RealStop") then
+			local squares = {}
+			for _, p in m:GetChildren() do
+				if p:IsA("BasePart") and math.abs(p.Size.X - p.Size.Y) < 0.01 and p.Size.Z < 0.3 then
+					table.insert(squares, p)
+				end
+			end
+			if #squares >= 2 then
+				local text = squares[1]:FindFirstChildOfClass("SurfaceGui") and squares[1] or squares[2]
+				local base = text.CFrame
+				local red = Color3.fromRGB(196, 22, 28)
+				for i, p in squares do
+					p.Size = V(2.5, 2.5, 0.12)
+					p.Color = red
+					p.CFrame = base * CFrame.Angles(0, 0, i == 1 and 0 or math.rad(45))
+					if p ~= text then
+						p.CFrame = base * CFrame.new(0, 0, 0.004) * CFrame.Angles(0, 0, math.rad(45))
 					end
 				end
-			end
-			Lib.yield(1)
-		end
-	end
-
-	-- Dos des panneaux simple face : plaque métal brossé arrondie au lieu d'un bloc sombre
-	local OPP = { [Enum.NormalId.Front] = Enum.NormalId.Back, [Enum.NormalId.Back] = Enum.NormalId.Front }
-	for _, p in map:GetDescendants() do
-		if p:IsA("BasePart") and p:GetAttribute("Framed") and not p:GetAttribute("BackPlated") then
-			local faces = {}
-			for _, g in p:GetChildren() do
-				if g:IsA("SurfaceGui") then
-					faces[g.Face] = true
+				text.CFrame = base
+				for k = 0, 1 do
+					Lib.deco(m, base * CFrame.new(0, 0, 0.05) * CFrame.Angles(0, 0, math.rad(45 * k)), V(2.75, 2.75, 0.08), Color3.new(1, 1, 1), Enum.Material.SmoothPlastic, { Name = "StopBorder" })
+					Lib.deco(m, base * CFrame.new(0, 0, 0.11) * CFrame.Angles(0, 0, math.rad(45 * k)), V(2.75, 2.75, 0.04), ALU, Enum.Material.Metal, { Name = "SignBack" })
 				end
-			end
-			for f, o in OPP do
-				if faces[f] and not faces[o] and p.Size.X >= 1 and p.Size.Y >= 0.6 then
-					local g = Instance.new("SurfaceGui")
-					g.Name = "BackPlate"
-					g.Face = o
-					g.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
-					g.PixelsPerStud = PPS
-					pcall(function()
-						g.MaxDistance = 300
-					end)
-					local margin = math.clamp(math.min(p.Size.X, p.Size.Y) * 0.06, 0.08, 0.35) * PPS
-					local fr = Instance.new("Frame")
-					fr.AnchorPoint = Vector2.new(0.5, 0.5)
-					fr.Position = UDim2.fromScale(0.5, 0.5)
-					fr.Size = UDim2.new(1, -margin * 2, 1, -margin * 2)
-					fr.BackgroundColor3 = Color3.fromRGB(150, 156, 166)
-					fr.BorderSizePixel = 0
-					corner(fr, math.min(p.Size.X, p.Size.Y) * 0.16 * PPS)
-					local gr = Instance.new("UIGradient")
-					gr.Rotation = 90
-					gr.Color = ColorSequence.new(Color3.fromRGB(235, 238, 242), Color3.fromRGB(150, 154, 162))
-					gr.Parent = fr
-					fr.Parent = g
-					g:SetAttribute("Styled", true)
-					g.Parent = p
-				end
-			end
-			p:SetAttribute("BackPlated", true)
-			Lib.yield(1)
-		end
-	end
-
-	-- Poteaux de panneaux : métal sombre + capuchon
-	local caps = 0
-	for _, m in map:GetDescendants() do
-		if m:IsA("Model") and (m.Name == "PostSign" or m.Name == "Welcome" or m.Name == "SpeedLimit") then
-			for _, p in m:GetChildren() do
-				if p:IsA("BasePart") and p.Size.Y > 3 and p.Size.X <= 0.7 and p.Size.Z <= 0.7 and not p:GetAttribute("Capped") then
-					p.Color = FRAME
-					p.Material = Enum.Material.Metal
-					p:SetAttribute("Capped", true)
-					local cap = Lib.deco(m, p.CFrame * CFrame.new(0, p.Size.Y / 2 + 0.15, 0), V(p.Size.X + 0.25, 0.3, p.Size.Z + 0.25), Lib.C.brandOrange, Enum.Material.SmoothPlastic, { Name = "PostCap" })
-					local base = Lib.deco(m, p.CFrame * CFrame.new(0, -p.Size.Y / 2 + 0.2, 0), V(p.Size.X + 0.5, 0.4, p.Size.Z + 0.5), FRAME, Enum.Material.Metal, { Name = "PostBase" })
-					caps += 1
-				end
+				m:SetAttribute("RealStop", true)
+				stops += 1
 			end
 		end
 	end
-	return ("panneaux : %d plaques stylées (%d cadres), %d poteaux"):format(n, frames, caps)
+	return ("panneaux : %d panneaux routiers, %d enseignes, %d dos alu, %d poteaux, %d STOP"):format(road, other, backs, poles, stops)
 end
