@@ -130,6 +130,45 @@ return function()
 	busStop(V(250, W, -144), V(0, 0, -1), "RUE COMMERÇANTE")
 	busStop(V(-25.5, W, 260), V(1, 0, 0), "LES LILAS")
 
+	---------------------------------------------------------------- Dégager les chaussées : déplace tout panneau posé sur une route
+	do
+		local roadsF = { workspace.Map.Roads.MainRoads, workspace.Map.Roads.SecondaryRoads, workspace.Map.Roads.Intersections }
+		local params = OverlapParams.new()
+		params.FilterType = Enum.RaycastFilterType.Include
+		params.FilterDescendantsInstances = roadsF
+		local function onRoad(m)
+			local cf, size = m:GetBoundingBox()
+			local box = CFrame.new(cf.Position.X, Lib.ROAD - 0.3, cf.Position.Z)
+			for _, h in workspace:GetPartBoundsInBox(box, Vector3.new(size.X + 1, 0.4, size.Z + 1), params) do
+				if h.Name == "Road" or h.Name == "Intersection" or h.Name == "Ring" then
+					return true
+				end
+			end
+			return false
+		end
+		for _, m in signs:GetChildren() do
+			if m:IsA("Model") and onRoad(m) then
+				local base = m:GetPivot()
+				local done = false
+				for dist = 2, 40, 2 do
+					for _, d in { V(1, 0, 0), V(-1, 0, 0), V(0, 0, 1), V(0, 0, -1) } do
+						m:PivotTo(base + d * dist)
+						if not onRoad(m) then
+							done = true
+							break
+						end
+					end
+					if done then
+						break
+					end
+				end
+				if not done then
+					m:PivotTo(base)
+				end
+			end
+		end
+	end
+
 	---------------------------------------------------------------- Bilan et vérifications
 	local parts, lights, colliders = 0, 0, 0
 	for _, d in workspace.Map:GetDescendants() do

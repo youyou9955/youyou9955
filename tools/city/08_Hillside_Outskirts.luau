@@ -77,7 +77,9 @@ return function()
 		Lib.disc(hill, V(b.X, 0, b.Z), 10, b.Y, 1, C.asphalt, M.Asphalt, { Name = "Joint" })
 		local outA = a + (V(a.X, 0, a.Z) - V(center.X, 0, center.Z)).Unit * 10.6
 		local outB = b + (V(b.X, 0, b.Z) - V(center.X, 0, center.Z)).Unit * 10.6
-		Lib.beam(hill, outA + V(0, 1.4, 0), outB + V(0, 1.4, 0), 0.5, 1.2, Color3.fromRGB(200, 200, 205), M.Metal, { Name = "GuardRail" })
+		if k > 2 and k < N - 1 then
+			Lib.beam(hill, outA + V(0, 1.4, 0), outB + V(0, 1.4, 0), 0.5, 1.2, Color3.fromRGB(200, 200, 205), M.Metal, { Name = "GuardRail" })
+		end
 		if k % 3 == 0 then
 			Lib.part(hill, CFrame.new(outA + V(0, 0.8, 0)), V(0.4, 1.6, 0.4), C.metal, M.Metal, { Name = "RailPost" })
 		end
@@ -109,7 +111,7 @@ return function()
 		for a = 0, 350, 10 do
 			local p = center + V(math.cos(math.rad(a)) * 29.5, top.Y + 1.5, math.sin(math.rad(a)) * 29.5)
 			local dirTo = V(math.cos(math.rad(a + 10)) * 29.5, 0, math.sin(math.rad(a + 10)) * 29.5) + center
-			if not (a > 245 and a < 295) then
+			if not (a > 245 and a < 345) then
 				Lib.beam(bv, p, V(dirTo.X, top.Y + 1.5, dirTo.Z), 0.6, 3, Color3.fromRGB(120, 90, 60), M.Wood, { Name = "Railing" })
 			end
 		end

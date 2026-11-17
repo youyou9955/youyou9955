@@ -63,12 +63,12 @@ return function()
 
 	-- quais de chargement (côté est, face à la rue x = 160)
 	local docks = Lib.model(HQ, "LoadingDocks")
-	for k = 0, 4 do
+	for k = 0, 3 do
 		local z = zFront + 10 + k * 16
 		Lib.part(docks, CFrame.new(bx2 + 2, W + 2, z), V(4, 4, 12), C.concrete, M.Concrete, { Name = "DockPlatform" })
 		Lib.deco(docks, CFrame.new(bx2 + 0.2, W + 6, z), V(0.3, 9, 10), O, M.DiamondPlate, { Name = "DockDoor" })
 		local n = Lib.deco(docks, CFrame.new(bx2 + 0.4, W + 12, z), V(0.2, 2, 4), C.dark)
-		Lib.label(n, Enum.NormalId.Right, "QUAI " .. (5 - k), Color3.fromRGB(255, 220, 120))
+		Lib.label(n, Enum.NormalId.Right, "QUAI " .. (4 - k), Color3.fromRGB(255, 220, 120))
 		Lib.mark(docks, CFrame.new(bx2 + 14, W + 0.03, z - 6.5), V(20, 0.05, 0.4), Color3.fromRGB(240, 200, 30))
 		for p = 1, 2 do
 			Lib.pallet(docks, CFrame.new(bx2 + 6 + p * 5, W, z + 3), true)
