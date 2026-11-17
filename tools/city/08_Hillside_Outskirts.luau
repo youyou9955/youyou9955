@@ -131,6 +131,14 @@ return function()
 		Lib.shop(bv, Lib.facing(center + V(-12, top.Y, 6), "S"), 14, 10, "CAFÉ DU SOMMET", Color3.fromRGB(240, 230, 210), Color3.fromRGB(180, 60, 40), 10)
 		Lib.parkingRow(bv, CFrame.new(center + V(8, top.Y, 10)), 3, 9, 12)
 	end
+	-- 2e passe : recreuser au-dessus de la route (les plateformes et le belvédère débordent parfois)
+	for k = 1, N do
+		local a, b = pts[k], pts[k + 1]
+		local yaw = CFrame.lookAt(V(a.X, 0, a.Z), V(b.X, 0, b.Z))
+		local base = math.min(a.Y, b.Y) - 2.5
+		T:FillBlock(CFrame.new(((a + b) / 2).X, base + 14, ((a + b) / 2).Z) * (yaw - yaw.Position), V(24, 28, (b - a).Magnitude + 4), M.Air)
+		Lib.yield(4)
+	end
 	scatterTrees(veg, -125, 125, -1005, -760, 70, { "pine", "round" })
 
 	---------------------------------------------------------------- Tunnel du Demi-Tour (x = 320)

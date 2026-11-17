@@ -56,13 +56,13 @@ return function()
 
 	---------------------------------------------------------------- Panneaux d'entrée de quartier
 	local welcome = {
-		{ V(-180, W, -12), V(1, 0, 0), "DOWNTOWN", Color3.fromRGB(40, 60, 120) },
-		{ V(-12, W, 180), V(0, 0, -1), "QUARTIER RÉSIDENTIEL", Color3.fromRGB(40, 120, 70) },
-		{ V(180, W, -12), V(-1, 0, 0), "QUARTIER COMMERCIAL", Color3.fromRGB(190, 60, 60) },
-		{ V(176, W, 176), V(0, 0, -1), "ZONE INDUSTRIELLE", Color3.fromRGB(90, 90, 100) },
-		{ V(14, 0.2, -520), V(0, 0, 1), "HILLSIDE — LES COLLINES", Color3.fromRGB(60, 110, 60) },
-		{ V(14, 0.2, 520), V(0, 0, -1), "LA PÉRIPHÉRIE", Color3.fromRGB(120, 100, 60) },
-		{ V(-520, 0.2, 16), V(1, 0, 0), "WRONG WAY CITY\njumelée avec Nulle-Part", C.brandBlue },
+		{ V(-180, W, -25), V(1, 0, 0), "DOWNTOWN", Color3.fromRGB(40, 60, 120) },
+		{ V(-25, W, 180), V(0, 0, -1), "QUARTIER RÉSIDENTIEL", Color3.fromRGB(40, 120, 70) },
+		{ V(180, W, -25), V(-1, 0, 0), "QUARTIER COMMERCIAL", Color3.fromRGB(190, 60, 60) },
+		{ V(184, W, 176), V(0, 0, -1), "ZONE INDUSTRIELLE", Color3.fromRGB(90, 90, 100) },
+		{ V(26, 0.2, -520), V(0, 0, 1), "HILLSIDE — LES COLLINES", Color3.fromRGB(60, 110, 60) },
+		{ V(26, 0.2, 520), V(0, 0, -1), "LA PÉRIPHÉRIE", Color3.fromRGB(120, 100, 60) },
+		{ V(-520, 0.2, 28), V(1, 0, 0), "WRONG WAY CITY\njumelée avec Nulle-Part", C.brandBlue },
 	}
 	for _, s in welcome do
 		local m = Lib.model(signs, "Welcome")
@@ -138,8 +138,9 @@ return function()
 		params.FilterDescendantsInstances = roadsF
 		local function onRoad(m)
 			local cf, size = m:GetBoundingBox()
+			local ws = cf:VectorToWorldSpace(size)
 			local box = CFrame.new(cf.Position.X, Lib.ROAD - 0.3, cf.Position.Z)
-			for _, h in workspace:GetPartBoundsInBox(box, Vector3.new(size.X + 1, 0.4, size.Z + 1), params) do
+			for _, h in workspace:GetPartBoundsInBox(box, Vector3.new(math.abs(ws.X) + 1, 0.4, math.abs(ws.Z) + 1), params) do
 				if h.Name == "Road" or h.Name == "Intersection" or h.Name == "Ring" then
 					return true
 				end
