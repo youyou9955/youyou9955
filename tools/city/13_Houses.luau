@@ -134,6 +134,15 @@ local function build(parent, cf, w, d, floors, rng, opts)
 			else
 				P(CFrame.new(fixed, (ya + yb) / 2, (a + b) / 2), V(thick, yb - ya, b - a), color, mat, { Name = "Wall" })
 			end
+			-- enduit intérieur : la face intérieure d'un mur extérieur est peinte, pas en brique
+			if outward then
+				local off = fixed - outward * (thick / 2 + 0.03)
+				if axis == "X" then
+					D(CFrame.new((a + b) / 2, (ya + yb) / 2, off), V(b - a, yb - ya, 0.06), inC, M.Plaster, { Name = "InnerFinish" })
+				else
+					D(CFrame.new(off, (ya + yb) / 2, (a + b) / 2), V(0.06, yb - ya, b - a), inC, M.Plaster, { Name = "InnerFinish" })
+				end
+			end
 		end
 		local cur = a1
 		for _, o in ops do
