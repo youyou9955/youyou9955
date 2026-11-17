@@ -17,7 +17,7 @@ src/client/   -> StarterPlayer.StarterPlayerScripts.Client
 assets/                         exports des modèles 3D (.fbx/.obj) si besoin
 ```
 
-Les modèles 3D vont dans `ReplicatedStorage.Assets` (dans Studio) : `Van`, `Car`, `Truck`, `Box`.
+Les modèles 3D (générés avec Meshy AI, fichiers .glb dans `Documents\\WrongWayDelivery\\models`) vont dans `ReplicatedStorage.Assets` (dans Studio) : `Van`, `Car`, `Truck`, `Box`.
 S'ils sont présents, le serveur les colle comme visuels sur les pièces de collision ; sinon il utilise des blocs simples.
 
 ## Commandes

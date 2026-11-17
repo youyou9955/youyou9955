@@ -23,8 +23,8 @@ Config.Van = {
 	DriftGrip = 1.2,
 
 	-- Suspension (raycast, auto-réglée selon la masse)
-	SuspensionRest = 2,
-	WheelRadius = 1.2,
+	SuspensionRest = 1.6,
+	WheelRadius = 0.5,
 	SagRatio = 0.45, -- part de la suspension écrasée au repos
 	DampingRatio = 0.45,
 
@@ -37,12 +37,12 @@ Config.Van = {
 	BedSize = Vector3.new(6.6, 0, 8), -- surface utile du plateau arrière
 
 	-- Décalage du modèle 3D visuel (Assets.Van) par rapport au châssis
-	VisualOffset = CFrame.new(0, 1.2, 0),
+	VisualOffset = CFrame.new(0, 1.03, 0),
 }
 
 Config.Cargo = {
 	BoxCount = 8,
-	BoxSize = Vector3.new(2, 1.5, 1.35),
+	BoxSize = Vector3.new(2, 1.36, 1.44),
 	Density = 0.25,
 	Friction = 0.55,
 	Elasticity = 0.15,
