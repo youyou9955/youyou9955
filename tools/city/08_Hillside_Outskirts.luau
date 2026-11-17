@@ -59,6 +59,8 @@ return function()
 	end
 	local hill = Lib.model(H, "RouteDeLaColline")
 	Lib.road(hill, V(0, 0.2, -745), pts[1], 20, { center = "dashed" })
+	T:FillBlock(CFrame.new(0, 12.1, -752), V(32, 28, 24), M.Air)
+	Lib.settle(-20, -768, 20, -736)
 	-- 1) creuser au-dessus de la route
 	for k = 1, N do
 		local a, b = pts[k], pts[k + 1]
@@ -144,7 +146,7 @@ return function()
 	---------------------------------------------------------------- Tunnel du Demi-Tour (x = 320)
 	do
 		local tn = Lib.model(Lib.path("Landmarks"), "TunnelDuDemiTour")
-		T:FillBlock(CFrame.new(320, 9, -650), V(32, 18, 140), M.Air)
+		T:FillBlock(CFrame.new(320, 11, -650), V(32, 22, 140), M.Air)
 		Lib.settle(300, -724, 340, -576)
 		local grey = Color3.fromRGB(150, 150, 150)
 		for _, s in { -1, 1 } do
