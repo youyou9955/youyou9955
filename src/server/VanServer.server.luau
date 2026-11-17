@@ -11,7 +11,8 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config"))
 local VanPhysics = require(Shared:WaitForChild("VanPhysics"))
 
-local VAN_SPAWN = CFrame.new(-27, 5, 40)
+-- Devant le QG, sur l'avenue z = 0, voie de droite, tournée vers +X
+local VAN_SPAWN = CFrame.new(100, 5, 12) * CFrame.Angles(0, -math.pi / 2, 0)
 
 ---------------------------------------------------------------- Remotes
 local remotes = ReplicatedStorage:FindFirstChild("VanRemotes") or Instance.new("Folder")
@@ -23,7 +24,7 @@ resetRemote.Name = "ResetVan"
 resetRemote.Parent = remotes
 
 ---------------------------------------------------------------- Sol de test
-if not Workspace:FindFirstChild("Baseplate") then
+if not Workspace:FindFirstChild("Baseplate") and not Workspace:FindFirstChild("Map") then
 	local ground = Instance.new("Part")
 	ground.Name = "Baseplate"
 	ground.Size = Vector3.new(1024, 4, 1024)
