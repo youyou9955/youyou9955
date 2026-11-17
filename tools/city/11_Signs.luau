@@ -5,7 +5,7 @@
 local Lib = require(script.Parent.Lib)
 local V = Vector3.new
 local PPS = 40
-local FRAME = Color3.fromRGB(34, 36, 42)
+local FRAME = Color3.fromRGB(58, 62, 70)
 
 local function shade(c, k)
 	local h, s, v = c:ToHSV()
@@ -100,7 +100,7 @@ return function()
 					label.Font = Enum.Font.FredokaOne
 					g:SetAttribute("Styled", true)
 				elseif part.Name ~= "Pad" then
-					local bg = label.BackgroundTransparency < 1 and label.BackgroundColor3 or part.Color
+					local bg = part:GetAttribute("PanelColor") or (label.BackgroundTransparency < 1 and label.BackgroundColor3) or part.Color
 					if style(g, part, bg) then
 						g:SetAttribute("Styled", true)
 						if not part:GetAttribute("Framed") and part.Material ~= Enum.Material.Neon then
@@ -114,6 +114,48 @@ return function()
 					end
 				end
 			end
+			Lib.yield(1)
+		end
+	end
+
+	-- Dos des panneaux simple face : plaque métal brossé arrondie au lieu d'un bloc sombre
+	local OPP = { [Enum.NormalId.Front] = Enum.NormalId.Back, [Enum.NormalId.Back] = Enum.NormalId.Front }
+	for _, p in map:GetDescendants() do
+		if p:IsA("BasePart") and p:GetAttribute("Framed") and not p:GetAttribute("BackPlated") then
+			local faces = {}
+			for _, g in p:GetChildren() do
+				if g:IsA("SurfaceGui") then
+					faces[g.Face] = true
+				end
+			end
+			for f, o in OPP do
+				if faces[f] and not faces[o] and p.Size.X >= 1 and p.Size.Y >= 0.6 then
+					local g = Instance.new("SurfaceGui")
+					g.Name = "BackPlate"
+					g.Face = o
+					g.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
+					g.PixelsPerStud = PPS
+					pcall(function()
+						g.MaxDistance = 300
+					end)
+					local margin = math.clamp(math.min(p.Size.X, p.Size.Y) * 0.06, 0.08, 0.35) * PPS
+					local fr = Instance.new("Frame")
+					fr.AnchorPoint = Vector2.new(0.5, 0.5)
+					fr.Position = UDim2.fromScale(0.5, 0.5)
+					fr.Size = UDim2.new(1, -margin * 2, 1, -margin * 2)
+					fr.BackgroundColor3 = Color3.fromRGB(150, 156, 166)
+					fr.BorderSizePixel = 0
+					corner(fr, math.min(p.Size.X, p.Size.Y) * 0.16 * PPS)
+					local gr = Instance.new("UIGradient")
+					gr.Rotation = 90
+					gr.Color = ColorSequence.new(Color3.fromRGB(235, 238, 242), Color3.fromRGB(150, 154, 162))
+					gr.Parent = fr
+					fr.Parent = g
+					g:SetAttribute("Styled", true)
+					g.Parent = p
+				end
+			end
+			p:SetAttribute("BackPlated", true)
 			Lib.yield(1)
 		end
 	end

@@ -56,7 +56,7 @@ return function()
 
 	---------------------------------------------------------------- Panneaux d'entrée de quartier
 	local welcome = {
-		{ V(-180, W, -25), V(1, 0, 0), "DOWNTOWN", Color3.fromRGB(40, 60, 120) },
+		{ V(-150, W, -25), V(1, 0, 0), "DOWNTOWN", Color3.fromRGB(40, 60, 120) },
 		{ V(-25, W, 180), V(0, 0, -1), "QUARTIER RÉSIDENTIEL", Color3.fromRGB(40, 120, 70) },
 		{ V(180, W, -25), V(-1, 0, 0), "QUARTIER COMMERCIAL", Color3.fromRGB(190, 60, 60) },
 		{ V(184, W, 176), V(0, 0, -1), "ZONE INDUSTRIELLE", Color3.fromRGB(90, 90, 100) },
