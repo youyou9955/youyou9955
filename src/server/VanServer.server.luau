@@ -11,7 +11,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config"))
 local VanPhysics = require(Shared:WaitForChild("VanPhysics"))
 
-local VAN_SPAWN = CFrame.new(0, 6, -20)
+local VAN_SPAWN = CFrame.new(-27, 5, 40)
 
 ---------------------------------------------------------------- Remotes
 local remotes = ReplicatedStorage:FindFirstChild("VanRemotes") or Instance.new("Folder")
