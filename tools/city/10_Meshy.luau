@@ -130,7 +130,8 @@ return function()
 			place("Shop", m, cf, V(s.X, s.Y + 2, s.Z), "stretch", true).Name = "MeshyShop"
 			local sign = m:FindFirstChild("Sign")
 			if sign then
-				sign.CFrame = cf * CFrame.new(0, (s.Y + 2) * 0.86, -s.Z / 2 - 1.2)
+				sign.Size = V(math.min(sign.Size.X, s.X * 0.7), 2.2, 0.3)
+				sign.CFrame = cf * CFrame.new(0, (s.Y + 2) * 0.66, -s.Z / 2 - 0.6)
 			end
 			destroyNamed(m, { Body = 1, Storefront = 1, Door = 1, Awning = 1, Cornice = 1 })
 			stats.shop += 1
