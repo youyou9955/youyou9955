@@ -57,7 +57,7 @@ local function strip(map)
 				d:SetAttribute("Styled", nil)
 			end
 		elseif d:IsA("BasePart") then
-			if d.Name == "PostCap" or d.Name == "PostBase" or d.Name == "SignBack" then
+			if d.Name == "PostCap" or d.Name == "PostBase" or (d.Name == "SignBack" and d.Parent.Name ~= "StopSign") then
 				d:Destroy()
 			else
 				local pc = d:GetAttribute("PanelColor")
@@ -82,7 +82,7 @@ local function faceDims(part, face)
 	end
 end
 
-local function roadStyle(g, part)
+local function roadStyle(g, part, bg)
 	local label = g:FindFirstChildOfClass("TextLabel")
 	local w, h = faceDims(part, g.Face)
 	if not label or not w or w < 1 or h < 0.6 then
@@ -95,21 +95,31 @@ local function roadStyle(g, part)
 	label.TextScaled = true
 	local m = math.min(w, h)
 	local inset = math.clamp(m * 0.06, 0.08, 0.3) * PPS
+	-- liseré : cadre arrondi couleur du texte + plaque intérieure couleur du fond
+	local th = math.max(2, m * 0.035 * PPS)
 	local border = Instance.new("Frame")
 	border.Name = "Border"
-	border.BackgroundTransparency = 1
+	border.BorderSizePixel = 0
+	border.BackgroundColor3 = label.TextColor3
 	border.AnchorPoint = Vector2.new(0.5, 0.5)
 	border.Position = UDim2.fromScale(0.5, 0.5)
 	border.Size = UDim2.new(1, -inset * 2, 1, -inset * 2)
-	local stroke = Instance.new("UIStroke")
-	stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-	stroke.Color = label.TextColor3
-	stroke.Thickness = math.max(2, m * 0.035 * PPS)
-	stroke.Parent = border
-	local corner = Instance.new("UICorner")
-	corner.CornerRadius = UDim.new(0, m * 0.07 * PPS)
-	corner.Parent = border
+	local c1 = Instance.new("UICorner")
+	c1.CornerRadius = UDim.new(0, m * 0.07 * PPS)
+	c1.Parent = border
+	local inner = Instance.new("Frame")
+	inner.Name = "Inner"
+	inner.BorderSizePixel = 0
+	inner.BackgroundColor3 = bg
+	inner.AnchorPoint = Vector2.new(0.5, 0.5)
+	inner.Position = UDim2.fromScale(0.5, 0.5)
+	inner.Size = UDim2.new(1, -th * 2, 1, -th * 2)
+	local c2 = Instance.new("UICorner")
+	c2.CornerRadius = UDim.new(0, math.max(0, m * 0.07 * PPS - th))
+	c2.Parent = inner
+	inner.Parent = border
 	border.Parent = g
+	label.ZIndex = 3
 	local pad = label:FindFirstChildOfClass("UIPadding")
 	if pad then
 		pad.PaddingLeft = UDim.new(0.07, 0)
@@ -134,7 +144,7 @@ return function()
 				if model and model.Name == "StopSign" then
 					label.FontFace = FONT
 				elseif isRoadSign(part) then
-					if roadStyle(g, part) then
+					if roadStyle(g, part, part.Color) then
 						road += 1
 						plates[part] = plates[part] or {}
 						plates[part][g.Face] = true
@@ -185,7 +195,7 @@ return function()
 		local sd = W / (1 + math.sqrt(2))
 		local L = (W - sd) / 2
 		local band = Lib.deco(m, base, V(W, sd, thick), color, Enum.Material.SmoothPlastic, { Name = name })
-		Lib.deco(m, base, V(sd, W, thick), color, Enum.Material.SmoothPlastic, { Name = name })
+		Lib.deco(m, base * CFrame.new(0, 0, 0.012), V(sd, W, thick - 0.02), color, Enum.Material.SmoothPlastic, { Name = name })
 		local c = (sd + W) / 4
 		for k = 0, 3 do
 			local corner = CFrame.Angles(0, 0, k * math.pi / 2) * CFrame.fromMatrix(V(c, c, 0), V(0, 0, 1), V(0, 1, 0))
