@@ -180,33 +180,43 @@ return function()
 		end
 	end
 
-	-- STOP : octogone régulier (deux carrés à 45°) + bord blanc
+	-- STOP : vrai octogone (2 bandes + 4 coins en biseau) rouge, bord blanc derrière
+	local function octagon(m, base, W, thick, color, name)
+		local sd = W / (1 + math.sqrt(2))
+		local L = (W - sd) / 2
+		local band = Lib.deco(m, base, V(W, sd, thick), color, Enum.Material.SmoothPlastic, { Name = name })
+		Lib.deco(m, base, V(sd, W, thick), color, Enum.Material.SmoothPlastic, { Name = name })
+		local c = (sd + W) / 4
+		for k = 0, 3 do
+			local corner = CFrame.Angles(0, 0, k * math.pi / 2) * CFrame.fromMatrix(V(c, c, 0), V(0, 0, 1), V(0, 1, 0))
+			Lib.deco(m, base * corner, V(thick, L, L), color, Enum.Material.SmoothPlastic, { Name = name, Class = "WedgePart" })
+		end
+		return band
+	end
 	local stops = 0
 	for _, m in map:GetDescendants() do
 		if m:IsA("Model") and m.Name == "StopSign" and not m:GetAttribute("RealStop") then
-			local squares = {}
+			local gui, base
 			for _, p in m:GetChildren() do
-				if p:IsA("BasePart") and math.abs(p.Size.X - p.Size.Y) < 0.01 and p.Size.Z < 0.3 then
-					table.insert(squares, p)
+				if p:IsA("BasePart") and p:FindFirstChildOfClass("SurfaceGui") then
+					gui, base = p:FindFirstChildOfClass("SurfaceGui"), p.CFrame
 				end
 			end
-			if #squares >= 2 then
-				local text = squares[1]:FindFirstChildOfClass("SurfaceGui") and squares[1] or squares[2]
-				local base = text.CFrame
-				local red = Color3.fromRGB(196, 22, 28)
-				for i, p in squares do
-					p.Size = V(2.5, 2.5, 0.12)
-					p.Color = red
-					p.CFrame = base * CFrame.Angles(0, 0, i == 1 and 0 or math.rad(45))
-					if p ~= text then
-						p.CFrame = base * CFrame.new(0, 0, 0.004) * CFrame.Angles(0, 0, math.rad(45))
+			if gui then
+				for _, p in m:GetChildren() do
+					if p:IsA("BasePart") and (p.Size.Y < 3 and p.Size.Z < 0.3 or p.Name == "StopBorder" or p.Name == "SignBack") then
+						if p ~= gui.Parent then
+							p:Destroy()
+						end
 					end
 				end
-				text.CFrame = base
-				for k = 0, 1 do
-					Lib.deco(m, base * CFrame.new(0, 0, 0.05) * CFrame.Angles(0, 0, math.rad(45 * k)), V(2.75, 2.75, 0.08), Color3.new(1, 1, 1), Enum.Material.SmoothPlastic, { Name = "StopBorder" })
-					Lib.deco(m, base * CFrame.new(0, 0, 0.11) * CFrame.Angles(0, 0, math.rad(45 * k)), V(2.75, 2.75, 0.04), ALU, Enum.Material.Metal, { Name = "SignBack" })
-				end
+				local old = gui.Parent
+				local band = octagon(m, base, 2.5, 0.1, Color3.fromRGB(196, 22, 28), "StopFace")
+				octagon(m, base * CFrame.new(0, 0, 0.07), 2.8, 0.05, Color3.new(1, 1, 1), "StopBorder")
+				octagon(m, base * CFrame.new(0, 0, 0.11), 2.8, 0.03, ALU, "SignBack")
+				gui.Parent = band
+				gui.PixelsPerStud = 60
+				old:Destroy()
 				m:SetAttribute("RealStop", true)
 				stops += 1
 			end
