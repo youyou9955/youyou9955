@@ -142,6 +142,7 @@ return function()
 	clouds.Cover = 0.55
 	clouds.Density = 0.6
 	clouds.Parent = T
+	T.Decoration = false -- pas de brins d'herbe qui traversent les routes (et mieux pour mobile)
 	T.WaterColor = Color3.fromRGB(40, 120, 150)
 	T.WaterTransparency = 0.6
 	T.WaterWaveSize = 0.12

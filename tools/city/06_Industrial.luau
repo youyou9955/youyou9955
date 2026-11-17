@@ -31,7 +31,7 @@ end
 
 local function warehouse(parent, cf, w, d, h, color, name, docks)
 	local m = Lib.model(parent, name or "Warehouse")
-	Lib.part(m, cf * CFrame.new(0, h / 2, 0), V(w, h, d), color, M.CorrodedMetal, { Name = "Body" })
+	Lib.part(m, cf * CFrame.new(0, h / 2, 0), V(w, h, d), color, M.Metal, { Name = "Body" })
 	-- toit légèrement bombé
 	Lib.deco(m, cf * CFrame.new(0, h + 0.6, 0), V(w + 1, 1.2, d + 1), color:Lerp(Color3.new(0, 0, 0), 0.3), M.Metal, { Name = "Roof" })
 	for k = 1, 3 do

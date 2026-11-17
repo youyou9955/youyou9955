@@ -44,3 +44,12 @@ rokit install
 rojo serve
 ```
 Puis dans Studio : plugin Rojo -> Connect.
+
+## La ville (map)
+
+Générée par les scripts `tools/city/*.luau` (à exécuter dans Studio, dans l'ordre 01 → 09 ; `01_Setup` efface et reconstruit tout).
+Tout est rangé dans `Workspace.Map` : `Roads/` (MainRoads, SecondaryRoads, Intersections, Sidewalks, RoadMarkings, Bridges, Signs), `Districts/` (Downtown, Residential, Industrial, Commercial, Hillside, Outskirts), `Headquarters`, `Landmarks`, `Vegetation`, `StreetFurniture`, `LightingObjects`, `DeliveryZones` (repères tagués `DeliveryZone`), `Spawns`.
+
+- Grille de 6 x 6 îlots (axes tous les 160 studs), avenues de 44 studs, rond-point central, 48 carrefours avec feux ou STOP.
+- QG Wrong Way Delivery à l'îlot nord-est du rond-point ; la camionnette apparaît devant, sur l'avenue.
+- Rivière à l'est avec un pont haubané et deux ponts bas, lac avec plage, collines au sud (route en spirale, belvédère, tunnel), périphérique extérieur, montagnes en bordure.
