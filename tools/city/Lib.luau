@@ -576,4 +576,33 @@ function Lib.pick(t)
 	return t[Lib.rng:NextInteger(1, #t)]
 end
 
+-- Le terrain lisse rend une surface 2 studs au-dessus d'un voxel plein. settle() met la couche
+-- de voxels [-4, 0] à 50 % d'occupation partout où elle est pleine sous de l'air : le sol plat
+-- se retrouve exactement à y = 0, sous les routes (0.2) et les trottoirs.
+function Lib.settle(x1, z1, x2, z2)
+	local T = workspace.Terrain
+	for tx = x1, x2 - 1, 400 do
+		for tz = z1, z2 - 1, 400 do
+			local r = Region3.new(Vector3.new(tx, -4, tz), Vector3.new(math.min(tx + 400, x2), 4, math.min(tz + 400, z2))):ExpandToGrid(4)
+			local mats, occ = T:ReadVoxels(r, 4)
+			local sx, sz = occ.Size.X, occ.Size.Z
+			for a = 1, sx do
+				local ca, cb = occ[a][1], occ[a][2]
+				for c = 1, sz do
+					if ca[c] > 0.99 and cb[c] < 0.01 then
+						ca[c] = 0.5
+					end
+				end
+			end
+			T:WriteVoxels(r, 4, mats, occ)
+			task.wait()
+		end
+	end
+end
+
+-- Change la matière du terrain de surface sans changer sa forme.
+function Lib.paint(x1, z1, x2, z2, from, to)
+	workspace.Terrain:ReplaceMaterial(Region3.new(Vector3.new(x1, -8, z1), Vector3.new(x2, 4, z2)):ExpandToGrid(4), 4, from, to)
+end
+
 return Lib

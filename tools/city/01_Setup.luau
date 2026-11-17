@@ -91,6 +91,9 @@ return function()
 		Lib.part(bounds, CFrame.new(b[1], 100, b[2]), Vector3.new(b[3], 220, b[4]), Color3.new(1, 1, 1), M.SmoothPlastic, { Transparency = 1, CanTouch = false, CastShadow = false, Name = "Boundary" })
 	end
 
+	-- Sol plat exactement à y = 0
+	Lib.settle(-1400, -1400, 1400, 1400)
+
 	-- Éclairage et ambiance
 	local L = game:GetService("Lighting")
 	for _, c in L:GetChildren() do

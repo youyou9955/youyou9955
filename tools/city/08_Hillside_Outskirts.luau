@@ -63,7 +63,8 @@ return function()
 	for k = 1, N do
 		local a, b = pts[k], pts[k + 1]
 		local yaw = CFrame.lookAt(V(a.X, 0, a.Z), V(b.X, 0, b.Z))
-		T:FillBlock(CFrame.new((a + b) / 2 + V(0, 13, 0)) * (yaw - yaw.Position), V(32, 25, (b - a).Magnitude + 6), M.Air)
+		local base = math.min(a.Y, b.Y) - 2.5
+		T:FillBlock(CFrame.new(((a + b) / 2).X, base + 14, ((a + b) / 2).Z) * (yaw - yaw.Position), V(32, 28, (b - a).Magnitude + 6), M.Air)
 		Lib.yield(4)
 	end
 	-- 2) remblai sous la route, chaussée, glissières côté extérieur
@@ -71,9 +72,13 @@ return function()
 		local a, b = pts[k], pts[k + 1]
 		local mid = (a + b) / 2
 		local yaw = CFrame.lookAt(V(a.X, 0, a.Z), V(b.X, 0, b.Z))
-		local hgt = mid.Y + 7
-		T:FillBlock(CFrame.new(mid.X, mid.Y - 1 - hgt / 2, mid.Z) * (yaw - yaw.Position), V(26, hgt, (b - a).Magnitude + 4), M.Grass)
+		local ftop = math.min(a.Y, b.Y) - 3.5
+		local hgt = ftop + 8
+		if hgt > 1 then
+			T:FillBlock(CFrame.new(mid.X, ftop - hgt / 2, mid.Z) * (yaw - yaw.Position), V(24, hgt, (b - a).Magnitude + 2), M.Grass)
+		end
 		Lib.road(hill, a, b, 20, { center = "dashed" })
+		Lib.beam(hill, a - V(0, 1, 0), b - V(0, 1, 0), 21, 5, Color3.fromRGB(130, 120, 105), M.Slate, { Name = "Embankment" }, true)
 		Lib.disc(hill, V(b.X, 0, b.Z), 10, b.Y, 1, C.asphalt, M.Asphalt, { Name = "Joint" })
 		local outA = a + (V(a.X, 0, a.Z) - V(center.X, 0, center.Z)).Unit * 10.6
 		local outB = b + (V(b.X, 0, b.Z) - V(center.X, 0, center.Z)).Unit * 10.6
@@ -90,8 +95,9 @@ return function()
 		local p = pts[k]
 		local out = (V(p.X, 0, p.Z) - V(center.X, 0, center.Z)).Unit
 		local hp = p + out * 27
-		T:FillBlock(CFrame.new(hp.X, (p.Y - 7) / 2 - 0.2, hp.Z), V(30, p.Y + 7, 30), M.Grass)
-		T:FillBlock(CFrame.new(hp.X, p.Y + 14, hp.Z), V(30, 28, 30), M.Air)
+		T:FillBlock(CFrame.new(hp.X, p.Y + 12, hp.Z), V(30, 28, 30), M.Air)
+		T:FillBlock(CFrame.new(hp.X, (p.Y - 11.5) / 2 - 1, hp.Z), V(30, p.Y + 7.5, 30), M.Grass)
+		Lib.part(H, CFrame.new(hp.X, p.Y - 2.2, hp.Z), V(30, 4, 30), Color3.fromRGB(150, 140, 125), M.Cobblestone, { Name = "HousePad" })
 		Lib.part(H, CFrame.lookAt(V(hp.X, 0, hp.Z), V(hp.X, 0, hp.Z) + out) * CFrame.new(0, (p.Y - 7) / 2, -15.5), V(31, p.Y + 7, 1.6), Color3.fromRGB(150, 140, 125), M.Cobblestone, { Name = "RetainingWall" })
 		local cf = CFrame.lookAt(V(hp.X, p.Y - 0.2, hp.Z), V(hp.X, p.Y - 0.2, hp.Z) - out)
 		Lib.house(H, cf, { w = 18, d = 16, floors = rng:NextInteger(1, 2), garage = false, name = "HillHouse" })
@@ -105,9 +111,9 @@ return function()
 	do
 		local top = pts[#pts]
 		local bv = Lib.model(Lib.path("Landmarks"), "Belvedere")
-		T:FillBlock(CFrame.new(center.X, top.Y + 15, center.Z), V(70, 30, 70), M.Air)
-		T:FillCylinder(CFrame.new(center.X, (top.Y - 8) / 2, center.Z), top.Y + 8, 32, M.Grass)
-		Lib.disc(bv, center, 30, top.Y, 1, Color3.fromRGB(205, 195, 180), M.Pavement, { Name = "Plaza" })
+		T:FillBlock(CFrame.new(center.X, top.Y + 13, center.Z), V(70, 30, 70), M.Air)
+		T:FillCylinder(CFrame.new(center.X, (top.Y - 10.5) / 2, center.Z), top.Y + 5, 32, M.Grass)
+		Lib.disc(bv, center, 30, top.Y, 4, Color3.fromRGB(205, 195, 180), M.Pavement, { Name = "Plaza" })
 		for a = 0, 350, 10 do
 			local p = center + V(math.cos(math.rad(a)) * 29.5, top.Y + 1.5, math.sin(math.rad(a)) * 29.5)
 			local dirTo = V(math.cos(math.rad(a + 10)) * 29.5, 0, math.sin(math.rad(a + 10)) * 29.5) + center
@@ -131,6 +137,7 @@ return function()
 	do
 		local tn = Lib.model(Lib.path("Landmarks"), "TunnelDuDemiTour")
 		T:FillBlock(CFrame.new(320, 9, -650), V(32, 18, 140), M.Air)
+		Lib.settle(300, -724, 340, -576)
 		local grey = Color3.fromRGB(150, 150, 150)
 		for _, s in { -1, 1 } do
 			Lib.part(tn, CFrame.new(320 + s * 13.5, 8, -650), V(3, 16, 132), grey, M.Concrete, { Name = "Wall" })
@@ -163,6 +170,7 @@ return function()
 		T:FillBlock(CFrame.new(-560, -3, -800), V(620, 6, 24), M.Air)
 		T:FillBlock(CFrame.new(-560, -4.5, -800), V(620, 3, 24), M.Water)
 		T:FillBlock(CFrame.new(-560, -7, -800), V(620, 2, 32), M.Mud)
+		Lib.settle(-880, -820, -240, -780)
 		local pb = Lib.model(bridges, "PetitPontDuRuisseau")
 		for _, s in { -1, 1 } do
 			Lib.part(pb, CFrame.new(-320 + s * 12.6, 1.6, -800), V(0.8, 2.8, 30), Color3.fromRGB(120, 85, 55), M.Wood, { Name = "Rail" })
@@ -179,7 +187,7 @@ return function()
 			for fz = 0, 3 do
 				local x1, z1 = -300 + fx * 70, 540 + fz * 105
 				if not (fx >= 2 and fz <= 1) then
-					T:FillBlock(CFrame.new(x1 + 32, -1, z1 + 48), V(60, 2, 92), crops[(fx + fz) % #crops + 1])
+					Lib.paint(x1 + 2, z1 + 2, x1 + 62, z1 + 94, M.Grass, crops[(fx + fz) % #crops + 1])
 					for k = 1, 3 do
 						Lib.deco(farm, CFrame.new(x1 + rng:NextNumber(8, 56), 1.4, z1 + rng:NextNumber(8, 88)) * CFrame.Angles(0, 0, math.rad(90)), V(4, 3, 3), Color3.fromRGB(220, 190, 90), M.Fabric, { Shape = Enum.PartType.Cylinder, Name = "HayBale" })
 					end
@@ -222,7 +230,7 @@ return function()
 	do
 		local tv = Lib.model(O, "TerrainVague")
 		local c = V(-700, 0, -160)
-		T:FillBlock(CFrame.new(c.X, -1, c.Z), V(220, 2, 200), M.Ground)
+		Lib.paint(c.X - 110, c.Z - 100, c.X + 110, c.Z + 100, M.Grass, M.Ground)
 		for k = 1, 12 do
 			local p = c + V(rng:NextNumber(-100, 100), 0, rng:NextNumber(-90, 90))
 			Lib.part(tv, CFrame.new(p + V(0, 2, 0)) * CFrame.Angles(math.rad(rng:NextNumber(-15, 15)), rng:NextNumber(0, 6), math.rad(rng:NextNumber(-160, 160) * (rng:NextNumber() < 0.3 and 1 or 0.1))), V(6, 3.5, 11), Color3.fromHSV(rng:NextNumber(), 0.4, 0.45), M.CorrodedMetal, { Name = "AbandonedCar" })
