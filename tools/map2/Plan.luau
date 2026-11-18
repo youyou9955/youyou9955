@@ -26,6 +26,7 @@ Plan.lines = L
 -- Axes principaux
 add("X", 0, -1250, 1300, "main", "BoulevardCentral")
 add("Z", 0, -720, 1060, "main", "AvenueDesLivreurs")
+add("Z", 0, -1250, -720, "main", "RouteDuTunnel")
 -- Périphérique : côtés droits (les coins sont des arcs, voir Plan.ringArcs)
 local RX, RZ, RR = 900, 720, 140
 Plan.ring = { x = RX, z = RZ, r = RR }
@@ -65,6 +66,14 @@ end
 add("X", 300, 0, 900, "sec", "AvenueDesMagasins")
 add("Z", 600, 0, 720, "sec", "RueDesRestaurants")
 add("X", 520, 300, 900, "sec", "RueDuSupermarche")
+
+-- Largeur des trottoirs par type de route
+Plan.SW = { main = 12, ring = 12, sec = 10, res = 9, ind = 8 }
+
+-- Hors de la ville (au-delà du périphérique) : routes de campagne sans trottoir
+function Plan.rural(x, z)
+	return math.abs(x) > RX + 22 or math.abs(z) > RZ + 22
+end
 
 -- Ronds-points (centre, rayon extérieur de chaussée)
 Plan.roundabouts = {
@@ -180,13 +189,14 @@ function Plan.height(x, z)
 	end
 	-- crête du nord (le tunnel la traverse)
 	if z < -820 then
-		local t = smooth((-820 - z) / 110)
-		local back = smooth((z + 1150) / 70)
-		local ridge = 120 * t * back + 6 * math.noise(x / 90, 3.1) * t
+		local t = smooth((-820 - z) / 170)
+		local back = smooth((z + 1200) / 110)
+		local peak = 105 + 35 * math.noise(x / 260, 3.1)
+		local ridge = peak * t * back + 10 * math.noise(x / 70, z / 70, 3.3) * t * back
 		h = math.max(h, ridge)
 	end
 	-- vallée boisée au nord de la crête
-	if z < -1150 then
+	if z < -1160 then
 		h = math.max(h, 8 + 10 * math.noise(x / 160, z / 160, 1.7))
 	end
 	-- campagne vallonnée à l'est de la rivière et à l'ouest du périphérique
@@ -267,6 +277,6 @@ function Plan.height(x, z)
 	return h
 end
 
-Plan.WATER = -2.5 -- niveau de l'eau
+Plan.WATER = -4.5 -- niveau de l'eau (surface à y = -4)
 
 return Plan

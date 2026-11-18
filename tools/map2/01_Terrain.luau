@@ -47,15 +47,15 @@ return function()
 					local h = hr[j]
 					local slope = math.max(math.abs(H[i + 1][j] - H[i - 1][j]), math.abs(hr[j + 1] - hr[j - 1])) / (2 * RES)
 					local top
-					if h < W + 1.2 and Plan.riverDist(cx + (i - 0.5) * RES, cz + (j - 0.5) * RES) < Plan.river.w / 2 + 26 then
+					if h < 2 and Plan.riverDist(cx + (i - 0.5) * RES, cz + (j - 0.5) * RES) < Plan.river.w / 2 + 26 then
 						top = M.Sand
-					elseif (V(cx, 0, cz) - Plan.river.lake.c).Magnitude < Plan.river.lake.r + 70 and h < 2 then
+					elseif h < 2 and (V(cx + (i - 0.5) * RES, 0, cz + (j - 0.5) * RES) - Plan.river.lake.c).Magnitude < Plan.river.lake.r + 30 then
 						top = M.Sand
 					elseif h > 170 then
 						top = M.Snow
-					elseif slope > 0.85 then
+					elseif slope > 1.05 then
 						top = M.Rock
-					elseif slope > 0.55 then
+					elseif slope > 0.8 then
 						top = M.Ground
 					elseif h > 2 and math.noise((cx + i * RES) / 60, (cz + j * RES) / 60, 2.2) > 0.25 then
 						top = M.LeafyGrass
