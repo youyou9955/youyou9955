@@ -572,6 +572,16 @@ return function()
 			end
 		end
 	end
+	-- voitures d'allée qui débordent sur la chaussée ou le trottoir (terrains d'angle)
+	for _, v in Lib.path("DecorativeVehicles"):GetChildren() do
+		if v:GetAttribute("Lot") then
+			local cf, sz = v:GetBoundingBox()
+			if #workspace:GetPartBoundsInBox(cf, sz * 0.85, roadOv) > 0 then
+				v:Destroy()
+				removedLog["Car"] = (removedLog["Car"] or 0) + 1
+			end
+		end
+	end
 	local kinds = 0
 	for _ in used do
 		kinds += 1
