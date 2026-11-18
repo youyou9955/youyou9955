@@ -70,5 +70,68 @@ return function()
 			end
 		end
 	end
-	return ("finitions : %d vitrages recolorés sur %d tours, %d voitures sur le parking"):format(n, #towers, nc)
+	-- zone industrielle : remplit les grandes cours vides (conteneurs, palettes, citernes, cônes, voitures du personnel)
+	local ni = 0
+	local V, M = Lib.V, Lib.M
+	local CONT = { Lib.rgb(220, 70, 50), Lib.rgb(40, 120, 200), Lib.rgb(250, 180, 40), Lib.rgb(60, 170, 100), Lib.rgb(240, 120, 40), Lib.rgb(150, 80, 190) }
+	local ind = Lib.path("IndustrialZone")
+	if not ind:GetAttribute("Filled") then
+		ind:SetAttribute("Filled", true)
+		for _, yard in ind:GetDescendants() do
+			if yard.Name == "Yard" and yard:IsA("BasePart") then
+				local fill = Lib.model(yard.Parent, "YardProps")
+				local ov = OverlapParams.new()
+				ov.FilterType = Enum.RaycastFilterType.Exclude
+				ov.FilterDescendantsInstances = { yard, workspace.Terrain }
+				local top = yard.CFrame * CFrame.new(0, yard.Size.Y / 2, 0)
+				for gx = -yard.Size.X / 2 + 20, yard.Size.X / 2 - 20, 26 do
+					for gz = -yard.Size.Z / 2 + 20, yard.Size.Z / 2 - 20, 26 do
+						local cf = top * CFrame.new(gx, 0, gz)
+						if rng:NextNumber() < 0.42 and #workspace:GetPartBoundsInBox(cf * CFrame.new(0, 6, 0), V(26, 12, 28), ov) == 0 then
+							local r = rng:NextNumber()
+							local rot = cf * CFrame.Angles(0, rng:NextInteger(0, 1) * math.pi / 2, 0)
+							if r < 0.4 then
+								-- pile de conteneurs
+								local h = rng:NextInteger(1, 3)
+								for k = 0, h - 1 do
+									Lib.container(fill, rot * CFrame.new(-4.2, k * 8.5, 0), CONT[rng:NextInteger(1, #CONT)])
+									if rng:NextNumber() < 0.6 then
+										Lib.container(fill, rot * CFrame.new(4.2, k * 8.5, 0), CONT[rng:NextInteger(1, #CONT)])
+									end
+								end
+							elseif r < 0.65 then
+								-- palettes de colis
+								for px = -1, 1 do
+									for pz = -1, 1 do
+										if rng:NextNumber() < 0.75 then
+											Lib.pallet(fill, rot * CFrame.new(px * 5.5, 0, pz * 5.5), rng:NextInteger(2, 8))
+										end
+									end
+								end
+								Lib.cone(fill, rot * CFrame.new(10, 0, 10))
+							elseif r < 0.82 then
+								-- citernes
+								for _, x in { -6, 6 } do
+									local col = Lib.rgb(235, 235, 230)
+									Lib.cyl(fill, rot * CFrame.new(x, 0.5, 0), 1, 11, Lib.rgb(150, 150, 150), M.Concrete)
+									Lib.cyl(fill, rot * CFrame.new(x, 8, 0), 15, 10, col, M.Metal, { Name = "Tank" })
+									Lib.cylDeco(fill, rot * CFrame.new(x, 6, 0), 1.2, 10.2, Lib.rgb(240, 90, 50), M.SmoothPlastic)
+								end
+							else
+								-- voitures du personnel
+								for k = -1, 1 do
+									if rng:NextNumber() < 0.8 then
+										Lib.toyCar(Lib.path("DecorativeVehicles"), rot * CFrame.new(k * 8, 0, 0))
+									end
+								end
+							end
+							ni += 1
+						end
+					end
+				end
+				task.wait()
+			end
+		end
+	end
+	return ("finitions : %d vitrages recolorés sur %d tours, %d voitures sur le parking, %d groupes industriels"):format(n, #towers, nc, ni)
 end

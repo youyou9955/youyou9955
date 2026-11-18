@@ -490,7 +490,7 @@ function Lib.toyCar(parent, cf, color)
 			Lib.fine(m, cf * CFrame.new(s * 3.02, 4.6, 0.6), V(0.1, 1.6, 8.6), glass, M.Glass)
 		end
 	else
-		Lib.part(m, cf * CFrame.new(0, 4, 0.8), V(5.6, 2.2, 6.4), color:Lerp(C.white, 0.08), M.SmoothPlastic, { Name = "Cabin" })
+		Lib.part(m, cf * CFrame.new(0, 4, 0.8), V(5.6, 2.2, 6.4), color:Lerp(Lib.C.white, 0.08), M.SmoothPlastic, { Name = "Cabin" })
 		Lib.fine(m, cf * CFrame.new(0, 4.05, -2.45), V(4.8, 1.6, 0.1), glass, M.Glass)
 		Lib.fine(m, cf * CFrame.new(0, 4.05, 4.05), V(4.8, 1.6, 0.1), glass, M.Glass)
 		for _, s in { -1, 1 } do
