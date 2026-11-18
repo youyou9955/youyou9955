@@ -214,11 +214,11 @@ local STYLE = {
 	SmallHouses = { fence = { "wood", "picket", "none" }, mailbox = "classic", tree = "round" },
 }
 
-local function buildLot(dirs, lotCf, lw, ld, name, tag)
+local function buildLot(dirs, lotCf, lw, ld, name, tag, extraSetback)
 	local meta = META[name]
 	local style = STYLE[meta.cat]
 	local w = math.min(meta.w, lw - 12)
-	local setback = meta.cat == "Villas" and rng:NextNumber(14, 16) or rng:NextNumber(12, 16)
+	local setback = (meta.cat == "Villas" and rng:NextNumber(14, 16) or rng:NextNumber(12, 16)) + (extraSetback or 0)
 	-- garage : décale la maison pour laisser l'allée
 	local garage = meta.garage
 	local hx = 0
@@ -286,7 +286,7 @@ local function buildLot(dirs, lotCf, lw, ld, name, tag)
 
 	-- boîte aux lettres
 	Lib.yield(2)
-	mailbox(dirs.mailboxes, lotCf * CFrame.new(doorX + 3.2, 0, 1.6) * CFrame.Angles(0, math.pi, 0), style.mailbox)
+	mailbox(dirs.mailboxes, lotCf * CFrame.new(doorX + 3.2, 0, 1.6) * CFrame.Angles(0, math.pi, 0), style.mailbox).Name = tag
 
 	-- clôture avant (avec ouvertures pour l'allée et le garage)
 	local ftype = pick(style.fence)
@@ -422,8 +422,53 @@ local function buildLot(dirs, lotCf, lw, ld, name, tag)
 	return hm
 end
 
+
+---------------------------------------------------------------- terrains d'angle : rien ne doit empiéter sur les routes
+local roadOv = OverlapParams.new()
+roadOv.FilterType = Enum.RaycastFilterType.Include
+local function hitsRoad(p)
+	return #workspace:GetPartBoundsInBox(p.CFrame, p.Size * 0.92, roadOv) > 0
+end
+local function clearLot(dirs, tag)
+	for _, f in { dirs.gardens, dirs.fences, dirs.mailboxes } do
+		local m = f:FindFirstChild(tag)
+		if m then
+			m:Destroy()
+		end
+	end
+	for _, cat in dirs.houses do
+		for _, h in cat:GetChildren() do
+			if h.Name:sub(1, #tag + 1) == tag .. "_" then
+				h:Destroy()
+			end
+		end
+	end
+end
+local function cleanLot(dirs, tag)
+	-- supprime les éléments de jardin, clôtures, boîte aux lettres qui touchent une chaussée ou un trottoir
+	local n = 0
+	for _, f in { dirs.gardens, dirs.fences, dirs.mailboxes } do
+		local m = f:FindFirstChild(tag)
+		if m then
+			for _, c in m:GetChildren() do
+				local parts = c:IsA("BasePart") and { c } or c:GetDescendants()
+				for _, p in parts do
+					if p:IsA("BasePart") and p.Name ~= "Ramp" and p.Name ~= "Slab" and hitsRoad(p) then
+						c:Destroy()
+						n += 1
+						break
+					end
+				end
+			end
+		end
+	end
+	return n
+end
+
 return function()
 	local root = Lib.path("ResidentialDistrict")
+	local roads = Lib.path("Roads")
+	roadOv.FilterDescendantsInstances = { roads.Asphalt, roads.Intersections, roads.Roundabouts, roads.Sidewalks }
 	-- retire les maisons en pièces de 05 (et les voitures garées dans leurs allées)
 	for _, c in root:GetChildren() do
 		c:Destroy()
@@ -474,7 +519,7 @@ return function()
 		return n
 	end
 
-	local n, used = 0, {}
+	local n, used, fixed = 0, {}, 0
 	for i = 1, #XS - 1 do
 		for j = 1, #ZS - 1 do
 			if not (i == 3 and j == 3) then
@@ -489,7 +534,21 @@ return function()
 						local x = x1 + lw * (k - 0.5)
 						local lotCf = row == 0 and CFrame.lookAt(V(x, 0, z1), V(x, 0, z1 - 1)) or CFrame.lookAt(V(x, 0, z2), V(x, 0, z2 + 1))
 						local name = draw(lw)
-						buildLot(dirs, lotCf, lw, ld, name, ("Lot_%d_%d_%d"):format(i, j, k + row * nLots))
+						local tag = ("Lot_%d_%d_%d"):format(i, j, k + row * nLots)
+						local hm = buildLot(dirs, lotCf, lw, ld, name, tag)
+						-- terrain d'angle : maison qui touche la route -> petite maison plus en retrait
+						local tries = { { "Small1", 6 }, { "Small2", 12 }, { "Small3", 18 } }
+						local t = 0
+						while hm and hitsRoad(hm.Collision) and t < #tries do
+							t += 1
+							clearLot(dirs, tag)
+							name = tries[t][1]
+							hm = buildLot(dirs, lotCf, lw, ld, name, tag, tries[t][2])
+						end
+						if hm and hitsRoad(hm.Collision) then
+							hm:Destroy()
+						end
+						fixed += cleanLot(dirs, tag)
 						used[name] = (used[name] or 0) + 1
 						n += 1
 						task.wait()
@@ -502,5 +561,5 @@ return function()
 	for _ in used do
 		kinds += 1
 	end
-	return ("maisons Meshy : %d terrains, %d modèles différents"):format(n, kinds)
+	return ("maisons Meshy : %d terrains, %d modèles différents, %d éléments retirés des routes"):format(n, kinds, fixed)
 end
