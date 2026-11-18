@@ -13,7 +13,7 @@ local K = {
 	FH = 12, SLAB = 0.8, Y0 = 1, EXT = 0.8, OUT = 0.45, INT = 0.5,
 	DOOR_W = 4.5, DOOR_H = 8, IDOOR_W = 4, IDOOR_H = 7.5,
 	RISE = 1, RUN = 1.2, STAIR_W = 4.5, HALL = 5.5,
-	GARAGE_H = 10.8, LIGHTS = true,
+	GARAGE_H = 10.8, LIGHTS = true, FURNITURE = false,
 }
 
 local WHITE = rgb(242, 240, 234)
@@ -33,6 +33,9 @@ K.PAL = {
 	wood = { wall = rgb(168, 126, 86), mat = M.WoodPlanks, roof = rgb(70, 66, 62), trim = rgb(232, 226, 212), door = rgb(232, 226, 212), garage = rgb(232, 226, 212), inside = rgb(236, 230, 216), floor = rgb(150, 108, 72) },
 	stucco = { wall = rgb(230, 222, 204), mat = M.Plaster, roof = rgb(140, 84, 62), roofMat = M.ClayRoofTiles, trim = rgb(246, 242, 232), door = rgb(96, 66, 44), garage = rgb(120, 86, 58), inside = rgb(240, 234, 222), floor = rgb(200, 188, 168), floorMat = M.Limestone },
 	stone = { wall = rgb(196, 186, 168), mat = M.Limestone, upper = rgb(236, 232, 222), upperMat = M.Plaster, roof = rgb(58, 60, 64), trim = WHITE, door = rgb(76, 54, 40), garage = WHITE, inside = rgb(238, 234, 224), floor = rgb(162, 120, 84) },
+	farm = { wall = rgb(240, 238, 232), mat = M.WoodPlanks, roof = rgb(54, 56, 60), roofMat = M.Metal, trim = rgb(244, 242, 236), frame = rgb(38, 40, 44), door = rgb(38, 40, 44), garage = rgb(244, 242, 236), inside = rgb(240, 236, 228), floor = rgb(164, 122, 84) },
+	cream = { wall = rgb(232, 222, 198), mat = M.WoodPlanks, roof = rgb(62, 64, 68), trim = WHITE, door = rgb(44, 46, 50), shutter = rgb(40, 42, 46), garage = WHITE, inside = rgb(238, 232, 220), floor = rgb(160, 118, 82) },
+	slate = { wall = rgb(120, 126, 132), mat = M.WoodPlanks, roof = rgb(48, 50, 54), trim = WHITE, door = rgb(160, 112, 70), garage = WHITE, inside = rgb(236, 234, 228), floor = rgb(172, 132, 94) },
 	modernwhite = { wall = rgb(238, 238, 234), mat = M.Plaster, accent = rgb(84, 88, 92), accentMat = M.Plaster, wood = rgb(164, 118, 78), roof = rgb(72, 74, 78), trim = rgb(48, 50, 54), frame = rgb(42, 44, 48), door = rgb(150, 108, 70), garage = rgb(84, 88, 92), inside = rgb(242, 242, 238), floor = rgb(196, 170, 136), modern = true },
 	moderngrey = { wall = rgb(184, 184, 180), mat = M.Concrete, accent = rgb(238, 236, 230), accentMat = M.Plaster, wood = rgb(150, 106, 68), roof = rgb(64, 66, 70), trim = rgb(48, 50, 54), frame = rgb(42, 44, 48), door = rgb(42, 44, 48), garage = rgb(150, 106, 68), inside = rgb(238, 238, 234), floor = rgb(180, 152, 118), modern = true },
 	modernwood = { wall = rgb(90, 94, 98), mat = M.Plaster, accent = rgb(170, 124, 82), accentMat = M.WoodPlanks, wood = rgb(170, 124, 82), roof = rgb(60, 62, 66), trim = rgb(40, 42, 46), frame = rgb(36, 38, 42), door = rgb(170, 124, 82), garage = rgb(60, 62, 66), inside = rgb(240, 238, 232), floor = rgb(186, 156, 118), modern = true },
@@ -317,6 +320,39 @@ local function gableRoof(h, parent, lc, len, span, pitch, ohE, ohG, pal, wallCol
 		end
 	end
 	return rise
+end
+
+-- toit à quatre pans (croupes) : prisme central + 4 coins en CornerWedgePart (sommet au-dessus du coin +X/-Z)
+local CORNER_ANG = { ["1,-1"] = 0, ["-1,-1"] = math.pi / 2, ["-1,1"] = math.pi, ["1,1"] = -math.pi / 2 }
+local function hipRoof(h, parent, lc, len, span, pitch, oh, pal)
+	local base = h.cf * lc
+	local Lo, So = len + 2 * oh, span + 2 * oh
+	local run = So / 2
+	local rise = run * pitch
+	local y0 = -oh * pitch
+	local Lr = math.max(0, Lo - So)
+	local mat = pal.roofMat or M.RoofShingles
+	if Lr > 0.05 then
+		Lib.part(parent, base * CFrame.new(0, y0 + rise / 2, -run / 2), V(Lr, rise, run), pal.roof, mat, { Class = "WedgePart", Name = "Roof" })
+		Lib.part(parent, base * CFrame.new(0, y0 + rise / 2, run / 2) * CFrame.Angles(0, math.pi, 0), V(Lr, rise, run), pal.roof, mat, { Class = "WedgePart", Name = "Roof" })
+	end
+	for _, ex in { 1, -1 } do
+		for _, ez in { -1, 1 } do
+			local ang = CORNER_ANG[(-ex) .. "," .. (-ez)]
+			Lib.part(parent, base * CFrame.new(ex * (Lr / 2 + run / 2), y0 + rise / 2, ez * run / 2) * CFrame.Angles(0, ang, 0), V(run, rise, run), pal.roof, mat, { Class = "CornerWedgePart", Name = "Roof" })
+		end
+	end
+	-- sous-faces et bandeaux de rive tout autour (à l'extérieur des murs)
+	local d = props(true)
+	Lib.part(parent, base * CFrame.new(0, y0 - 0.15, -(span / 2 + oh / 2)), V(Lo, 0.3, oh), pal.trim, M.SmoothPlastic, props(true))
+	Lib.part(parent, base * CFrame.new(0, y0 - 0.15, span / 2 + oh / 2), V(Lo, 0.3, oh), pal.trim, M.SmoothPlastic, props(true))
+	Lib.part(parent, base * CFrame.new(len / 2 + oh / 2, y0 - 0.15, 0), V(oh, 0.3, span), pal.trim, M.SmoothPlastic, props(true))
+	Lib.part(parent, base * CFrame.new(-len / 2 - oh / 2, y0 - 0.15, 0), V(oh, 0.3, span), pal.trim, M.SmoothPlastic, props(true))
+	Lib.part(parent, base * CFrame.new(0, y0 - 0.1, -So / 2), V(Lo + 0.2, 0.6, 0.25), pal.trim, M.SmoothPlastic, props(true))
+	Lib.part(parent, base * CFrame.new(0, y0 - 0.1, So / 2), V(Lo + 0.2, 0.6, 0.25), pal.trim, M.SmoothPlastic, props(true))
+	Lib.part(parent, base * CFrame.new(Lo / 2, y0 - 0.1, 0), V(0.25, 0.6, So), pal.trim, M.SmoothPlastic, props(true))
+	Lib.part(parent, base * CFrame.new(-Lo / 2, y0 - 0.1, 0), V(0.25, 0.6, So), pal.trim, M.SmoothPlastic, props(true))
+	return rise + y0
 end
 
 ---------------------------------------------------------------- mobilier (repère : X largeur, Z profondeur, façade vers -Z, dos +Z)
@@ -870,6 +906,9 @@ function K.build(parent, cf, spec, rng)
 		end
 		gdoorU = (zc1 + zb) / 2
 	end
+	if spec.centerDoor then
+		doorX = 0
+	end
 	-- porte d'entrée
 	table.insert(ext[0].front, { doorX - K.DOOR_W / 2, doorX + K.DOOR_W / 2, 0, K.DOOR_H })
 	keep(0, R4(doorX - 2.8, doorX + 2.8, za, za + 5.4))
@@ -1150,10 +1189,18 @@ function K.build(parent, cf, spec, rng)
 		local x1, x2 = math.max(-W / 2 + 0.4, doorX - pw / 2), math.min(W / 2 - 0.4, doorX + pw / 2)
 		box(h, h.shell, x1, 0, -5.5, x2, Y0, 0, deck, M.WoodPlanks, false, { Name = "Porch" })
 		box(h, h.shell, doorX - 2.6, 0, -6.7, doorX + 2.6, Y0 / 2, -5.5, rgb(186, 182, 176), M.Concrete, false, { Name = "Step" })
-		for _, x in { x1 + 0.5, x2 - 0.5 } do
-			box(h, h.shell, x - 0.35, Y0, -5.4, x + 0.35, Y0 + 9, -4.7, pal.trim, M.SmoothPlastic, false, { Name = "Post" })
+		local nP = math.max(1, math.floor((x2 - x1 - 1) / 8 + 0.5))
+		for k = 0, nP do
+			local x = x1 + 0.5 + (x2 - x1 - 1) * k / nP
+			if math.abs(x - doorX) > 3 or k == 0 or k == nP then
+				box(h, h.shell, x - 0.35, Y0, -5.4, x + 0.35, Y0 + 9, -4.7, pal.trim, M.SmoothPlastic, false, { Name = "Post" })
+			end
 		end
 		box(h, h.shell, x1 - 0.6, Y0 + 9, -6.2, x2 + 0.6, Y0 + 9.5, 0, pal.roof, pal.roofMat or M.RoofShingles, false, { Name = "PorchRoof" })
+		if spec.portico then
+			-- fronton triangulaire au-dessus de l'entrée
+			gableRoof(h, h.shell, CFrame.new((x1 + x2) / 2, Y0 + 9.5, -3.1) * CFrame.Angles(0, math.pi / 2, 0), 6.2, x2 - x1 + 1.2, 0.5, 0.4, 0.3, pal, pal.trim, M.SmoothPlastic)
+		end
 		box(h, h.shell, x1 - 0.6, Y0 + 8.6, -6.3, x2 + 0.6, Y0 + 9.1, -5.9, pal.trim, M.SmoothPlastic, true)
 		-- garde-corps latéraux
 		for _, x in { x1 + 0.5, x2 - 0.5 } do
@@ -1181,7 +1228,13 @@ function K.build(parent, cf, spec, rng)
 		local pitch = spec.pitch or 0.58
 		local wcol = (nF > 1 and pal.upper) or pal.wall
 		local wmat = (nF > 1 and pal.upperMat) or pal.mat
-		if spec.roof == "frontgable" then
+		if spec.roof == "hip" then
+			if W >= D then
+				rise = hipRoof(h, h.shell, CFrame.new(0, top, D / 2), W, D, pitch, 1.4, pal)
+			else
+				rise = hipRoof(h, h.shell, CFrame.new(0, top, D / 2) * CFrame.Angles(0, math.pi / 2, 0), D, W, pitch, 1.4, pal)
+			end
+		elseif spec.roof == "frontgable" then
 			rise = gableRoof(h, h.shell, CFrame.new(0, top, D / 2) * CFrame.Angles(0, math.pi / 2, 0), D, W, pitch, 1.2, 1, pal, wcol, wmat)
 			-- œil-de-bœuf sur le pignon avant
 			mk(h, h.shell, 0, top + rise * 0.42, -0.1, 2.6, 2.6, 0.2, pal.trim, M.SmoothPlastic, true)
@@ -1232,6 +1285,8 @@ function K.build(parent, cf, spec, rng)
 		if spec.roof == "flat" then
 			box(h, h.shell, gx1, Hg, gz1, gx2, Hg + 0.4, gz2, pal.roof, M.Slate, false, { Name = "Roof" })
 			box(h, h.shell, gx1 - 0.1, Hg + 0.4, gz1 - 0.1, gx2 + 0.1, Hg + 0.7, gz1 + 0.5, pal.trim, M.Metal, true)
+		elseif spec.roof == "hip" then
+			hipRoof(h, h.shell, CFrame.new((gx1 + gx2) / 2, Hg, (gz1 + gz2) / 2) * CFrame.Angles(0, math.pi / 2, 0), Dg, gw + EXT, 0.45, 0.8, pal)
 		else
 			gableRoof(h, h.shell, CFrame.new((gx1 + gx2) / 2, Hg, (gz1 + gz2) / 2) * CFrame.Angles(0, math.pi / 2, 0), Dg, gw + EXT, 0.5, 0.6, 0.8, pal, gcol, gmat)
 		end
@@ -1244,8 +1299,10 @@ function K.build(parent, cf, spec, rng)
 		ginfo = { x = gcx, w = gDoorW, z0 = gz0 }
 	end
 	-- mobilier
-	for _, r in rooms do
-		furnish(h, r, rng, pal)
+	if K.FURNITURE then
+		for _, r in rooms do
+			furnish(h, r, rng, pal)
+		end
 	end
 	model.PrimaryPart = found
 	model:SetAttribute("HouseType", spec.type or "")

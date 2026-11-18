@@ -15,6 +15,9 @@ local TYPES = {
 	twostory = { cat = "TwoStoryHouses", floors = { 2 }, W = { 28, 32 }, D = { 35, 36 }, roofs = { "gable", "frontgable" }, garage = 0.75, porch = 0.6, chimney = 0.4, pals = { "white", "brickup", "grey", "beige", "taupe", "brownbrick" } },
 	villa = { cat = "Villas", floors = { 2 }, W = { 38, 42 }, D = { 36, 38 }, roofs = { "gable" }, garage = 0, porch = 1, porchW = 18, chimney = 0.6, pals = { "stucco", "stone", "brick", "white" } },
 	modern = { cat = "ModernHouses", floors = { 1, 2 }, W = { 30, 36 }, D = { 30, 33 }, roofs = { "flat" }, garage = 0.7, porch = 0, chimney = 0, pals = { "modernwhite", "moderngrey", "modernwood" } },
+	colonial = { cat = "TwoStoryHouses", floors = { 2 }, W = { 34, 37 }, D = { 35, 36 }, roofs = { "hip" }, garage = 0.4, porch = 1, porchW = 10, portico = true, centerDoor = true, chimney = 0.7, pals = { "cream", "white", "brick", "slate" } },
+	ranch = { cat = "ClassicHouses", floors = { 1 }, W = { 34, 38 }, D = { 28, 30 }, roofs = { "hip" }, pitch = 0.42, garage = 0.6, porch = 0.4, chimney = 0.3, pals = { "beige", "brownbrick", "taupe", "slate", "grey" } },
+	farmhouse = { cat = "TwoStoryHouses", floors = { 2 }, W = { 30, 32 }, D = { 35, 36 }, roofs = { "frontgable", "gable" }, garage = 0.5, porch = 1, porchFull = true, chimney = 0.3, pals = { "farm" } },
 	small = { cat = "SmallHouses", floors = { 1 }, W = { 22, 25 }, D = { 26, 28 }, roofs = { "gable", "frontgable" }, garage = 0, porch = 0.8, porchW = 9, chimney = 0.5, pals = { "white", "beige", "grey", "wood", "taupe" } },
 }
 local STYLE = {
@@ -180,6 +183,9 @@ local function makeSpec(typ, lw, lastPal)
 		porchW = T.porchW,
 		chimney = rng:NextNumber() < T.chimney,
 		doorSide = rng:NextNumber() < 0.5 and -1 or 1,
+		portico = T.portico,
+		centerDoor = T.centerDoor,
+		pitch = T.pitch,
 	}
 	if typ == "modern" and floors == 2 then
 		spec.D = 35
@@ -199,6 +205,9 @@ local function makeSpec(typ, lw, lastPal)
 		end
 	end
 	spec.W = math.min(spec.W, math.floor(budget))
+	if T.porchFull then
+		spec.porchW = spec.W * 2
+	end
 	return spec
 end
 
@@ -238,17 +247,6 @@ local function buildLot(dirs, lotCf, lw, ld, typ, tag, extraSetback, lastPal)
 		local col = typ == "villa" and rgb(214, 204, 186) or rgb(192, 190, 184)
 		Lib.part(garden, lotCf * CFrame.new(gx, 0.15, dl / 2), V(dw, 0.3, dl), col, typ == "villa" and M.Pavement or M.Concrete, { Name = "Driveway" })
 		Lib.driveway(garden, lotCf * CFrame.new(gx, 0, -sw) * CFrame.Angles(0, math.pi, 0), dw, sw)
-		local cz = math.max(7.5, setback - 7.5)
-		if rng:NextNumber() < 0.7 and (not info.garage or cz <= dl - 7) then
-			local ccf = lotCf * CFrame.new(gx, 0.3, cz) * CFrame.Angles(0, rng:NextNumber() < 0.5 and 0 or math.pi, 0)
-			local car = Lib.vehicle("Car", Lib.path("DecorativeVehicles"), ccf)
-			if not car then
-				car = Lib.toyCar(Lib.path("DecorativeVehicles"), ccf, pick({ rgb(236, 236, 232), rgb(170, 174, 178), rgb(60, 62, 66), rgb(40, 56, 84), rgb(110, 30, 34) }))
-			end
-			if car then
-				car:SetAttribute("Lot", tag)
-			end
-		end
 		bins(garden, lotCf * CFrame.new(gx + (gx >= hx and 1 or -1) * (dw / 2 + 2), 0, setback - 2) * CFrame.Angles(0, math.pi, 0))
 	else
 		bins(garden, lotCf * CFrame.new(hx + w / 2 + 3, 0, setback + 2))
@@ -484,7 +482,7 @@ return function()
 	dirs.mailboxes = Lib.folder(root, "Mailboxes")
 	dirs.trees = Lib.folder(root, "Trees")
 
-	local BAG = { "classic", "classic", "classic", "twostory", "twostory", "twostory", "villa", "modern", "modern", "small", "small" }
+	local BAG = { "classic", "classic", "twostory", "twostory", "colonial", "ranch", "farmhouse", "villa", "modern", "modern", "small", "small" }
 	local bag, last = {}, nil
 	local function draw(lw)
 		if #bag == 0 then
