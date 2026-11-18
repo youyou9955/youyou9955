@@ -255,8 +255,10 @@ local function buildLot(dirs, lotCf, lw, ld, name, tag, extraSetback)
 		local col = meta.cat == "Villas" and rgb(214, 200, 178) or rgb(192, 190, 184)
 		Lib.part(garden, lotCf * CFrame.new(gx, 0.15, dl / 2), V(dw, 0.3, dl), col, mat, { Name = "Driveway" })
 		Lib.driveway(garden, lotCf * CFrame.new(gx, 0, -sw) * CFrame.Angles(0, math.pi, 0), dw, sw)
-		if rng:NextNumber() < 0.7 then
-			local ccf = lotCf * CFrame.new(gx, 0.3, setback - 7.5) * CFrame.Angles(0, rng:NextNumber() < 0.5 and 0 or math.pi, 0)
+		-- voiture garée : jamais au-dessus du trottoir (avant de la voiture à z >= 1)
+		local cz = math.max(7.5, setback - 7.5)
+		if rng:NextNumber() < 0.7 and (not garage or cz <= setback - 7) then
+			local ccf = lotCf * CFrame.new(gx, 0.3, cz) * CFrame.Angles(0, rng:NextNumber() < 0.5 and 0 or math.pi, 0)
 			local car
 			if rng:NextNumber() < 0.5 then
 				car = Lib.toyCar(Lib.path("DecorativeVehicles"), ccf)
