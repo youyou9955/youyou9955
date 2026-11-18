@@ -18,12 +18,12 @@ local WHITE = rgb(242, 240, 234)
 
 -- thèmes : couleurs des produits et mobilier spécifique
 K.THEMES = {
-	toys = { floor = rgb(214, 206, 192), floorMat = M.SmoothPlastic, wall = rgb(246, 240, 226), products = { rgb(230, 70, 60), rgb(60, 130, 230), rgb(250, 200, 40), rgb(70, 180, 90), rgb(240, 130, 200) }, shelf = rgb(236, 236, 232) },
+	toys = { floor = rgb(214, 206, 192), floorMat = M.SmoothPlastic, wall = rgb(246, 240, 226), products = { rgb(230, 70, 60), rgb(60, 130, 230), rgb(250, 200, 40), rgb(70, 180, 90), rgb(240, 130, 200) }, shelf = rgb(236, 236, 232), balls = true, aisles = { "PELUCHES", "JEUX", "BALLONS", "VOITURES" } },
 	phones = { floor = rgb(196, 198, 200), floorMat = M.SmoothPlastic, wall = rgb(238, 240, 242), products = { rgb(30, 32, 36), rgb(210, 212, 216), rgb(60, 70, 90), rgb(130, 80, 200) }, shelf = rgb(250, 250, 250), tables = true },
 	bikes = { floor = rgb(120, 122, 126), floorMat = M.Concrete, wall = rgb(232, 230, 224), products = { rgb(200, 50, 50), rgb(40, 90, 160), rgb(30, 30, 34), rgb(240, 180, 40) }, shelf = rgb(70, 72, 78), racks = true },
-	boxes = { floor = rgb(150, 120, 90), floorMat = M.WoodPlanks, wall = rgb(236, 226, 206), products = { rgb(196, 150, 96), rgb(176, 130, 80), rgb(214, 176, 120) }, shelf = rgb(150, 112, 76), productMat = M.Cardboard },
+	boxes = { floor = rgb(150, 120, 90), floorMat = M.WoodPlanks, wall = rgb(236, 226, 206), products = { rgb(196, 150, 96), rgb(176, 130, 80), rgb(214, 176, 120) }, shelf = rgb(150, 112, 76), productMat = M.Cardboard, aisles = { "CARTONS", "ADHÉSIFS", "EMBALLAGE" } },
 	laundry = { floor = rgb(226, 230, 232), floorMat = M.CeramicTiles, wall = rgb(214, 236, 240), products = { rgb(240, 240, 240) }, shelf = rgb(240, 240, 240), laundry = true },
-	grocery = { floor = rgb(220, 218, 212), floorMat = M.CeramicTiles, wall = rgb(244, 242, 236), products = { rgb(220, 60, 50), rgb(250, 200, 40), rgb(70, 160, 80), rgb(240, 130, 40), rgb(60, 110, 200), rgb(240, 240, 236) }, shelf = rgb(236, 236, 232), fridges = true },
+	grocery = { floor = rgb(220, 218, 212), floorMat = M.CeramicTiles, wall = rgb(244, 242, 236), products = { rgb(220, 60, 50), rgb(250, 200, 40), rgb(70, 160, 80), rgb(240, 130, 40), rgb(60, 110, 200), rgb(240, 240, 236) }, shelf = rgb(236, 236, 232), fridges = true, aisles = { "ÉPICERIE", "BOISSONS", "FRAIS", "SNACKS" } },
 }
 
 local function P(h, parent, lcf, size, col, mat, collide, extra)
@@ -39,7 +39,13 @@ local function products(h, parent, cx, y, cz, len, depth, alongX, th, rng)
 		local col = th.products[rng:NextInteger(1, #th.products)]
 		local c = alongX and CFrame.new(cx + x + w / 2, y + ht / 2, cz) or CFrame.new(cx, y + ht / 2, cz + x + w / 2)
 		local sz = alongX and V(w - 0.1, ht, depth) or V(depth, ht, w - 0.1)
-		P(h, parent, c, sz, col, th.productMat or M.SmoothPlastic, false)
+		if th.balls and rng:NextNumber() < 0.22 then
+			local d = math.min(w - 0.1, ht, depth, 1.1)
+			local bc = alongX and CFrame.new(cx + x + w / 2, y + d / 2, cz) or CFrame.new(cx, y + d / 2, cz + x + w / 2)
+			P(h, parent, bc, V(d, d, d), col, M.SmoothPlastic, false, { Shape = Enum.PartType.Ball })
+		else
+			P(h, parent, c, sz, col, th.productMat or M.SmoothPlastic, false)
+		end
 		x += w
 	end
 end
@@ -95,8 +101,8 @@ local function ceilingLight(h, parent, cx, y, cz, lit)
 	local p = P(h, parent, CFrame.new(cx, y - 0.1, cz), V(2.4, 0.15, 6), rgb(255, 250, 238), M.Neon, false, { Transparency = 0.15 })
 	if lit then
 		local l = Instance.new("PointLight")
-		l.Range = 26
-		l.Brightness = 0.9
+		l.Range = 22
+		l.Brightness = 0.4
 		l.Color = rgb(255, 246, 230)
 		l.Shadows = false
 		l.Parent = p
@@ -159,6 +165,22 @@ function K.build(parent, cf, spec, rng)
 		box(h, inter, s * (W / 2 - EXT) - s * 0.1, 0.36, za, s * (W / 2 - EXT), GH, zb, th.wall, M.Plaster, true)
 	end
 	box(h, inter, xa, 0.36, zb - 0.1, xb, GH, zb, th.wall, M.Plaster, true)
+	-- joints de carrelage (grille de 4 studs)
+	local seam = th.floor:Lerp(Color3.new(0, 0, 0), 0.14)
+	for x = xa + 4, xb - 1, 4 do
+		box(h, inter, x - 0.04, 0.36, za, x + 0.04, 0.37, zb, seam, M.SmoothPlastic, false)
+	end
+	for z = za + 4, zb - 1, 4 do
+		box(h, inter, xa, 0.36, z - 0.04, xb, 0.37, z + 0.04, seam, M.SmoothPlastic, false)
+	end
+	-- plinthes et frise de couleur sur les murs intérieurs
+	local skirt = th.wall:Lerp(Color3.new(0, 0, 0), 0.35)
+	for _, s in { -1, 1 } do
+		local xw = s * (W / 2 - EXT) - s * 0.1
+		box(h, inter, xw - s * 0.12, 0.36, za, xw, 1.1, zb - 0.1, skirt, M.SmoothPlastic, false)
+		box(h, inter, xw - s * 0.08, 9.2, za, xw, 9.6, zb - 0.1, spec.accent or rgb(60, 130, 230), M.SmoothPlastic, false)
+	end
+	box(h, inter, xa, 0.36, zb - 0.22, xb, 1.1, zb - 0.1, skirt, M.SmoothPlastic, false)
 
 	-- façade : soubassement, vitrines, double porte, imposte et bandeau d'enseigne
 	local DW, DH = 7.2, 8.6
@@ -256,7 +278,7 @@ function K.build(parent, cf, spec, rng)
 		P(h, furn, CFrame.new(xa + 2.1 + (i % 2) * 1.8, 1.7 + math.floor(i / 2) * 1.6, RZ + 3), V(1.7, 1.5, 3.6), rgb(196, 150, 96), M.Cardboard, true)
 	end
 	local rl = Instance.new("PointLight")
-	rl.Range, rl.Brightness, rl.Color, rl.Shadows = 16, 0.6, rgb(255, 246, 230), false
+	rl.Range, rl.Brightness, rl.Color, rl.Shadows = 14, 0.3, rgb(255, 246, 230), false
 	rl.Parent = ceilingLight(h, furn, 0, GH - 0.2, (RZ + zb) / 2, false)
 
 	---------------------------------------------------------------- surface de vente
@@ -319,6 +341,16 @@ function K.build(parent, cf, spec, rng)
 		for i = 0, ng - 1 do
 			local x = ng == 1 and (lo + hi) / 2 or (lo + 1.6 + i * (hi - lo - 3.2) / (ng - 1))
 			gondola(h, furn, x, gz1, gz2, th, rng)
+			if th.aisles then
+				local sz = (gz1 + gz2) / 2
+				local name = th.aisles[(i % #th.aisles) + 1]
+				local b = P(h, furn, CFrame.new(x, 9.3, sz), V(4.2, 1.1, 0.12), spec.accent or rgb(60, 130, 230), M.SmoothPlastic, false)
+				Lib.label(b, Enum.NormalId.Front, name, WHITE, nil, Enum.Font.FredokaOne, true)
+				Lib.label(b, Enum.NormalId.Back, name, WHITE, nil, Enum.Font.FredokaOne, true)
+				for _, o in { -1.8, 1.8 } do
+					P(h, furn, CFrame.new(x + o, 11.08, sz), V(0.06, 2.45, 0.06), rgb(90, 90, 96), M.Metal, false)
+				end
+			end
 		end
 	end
 	-- podiums de vitrine (derrière le verre, hors passage de la porte)
