@@ -248,6 +248,36 @@ function Lib.asset(name, parent, cfGround, h, collide, newName)
 	return m
 end
 
+-- Voitures générées avec Meshy AI (Assets.City.Meshy*) : avant du maillage vers +X, ramené vers -Z de cfGround.
+Lib.MESHY_CARS = { "MeshySedan", "MeshySedan", "MeshySUV", "MeshySUV", "MeshyHatchback", "MeshyHatchback", "MeshyPickup", "MeshyMinivan" }
+Lib.MESHY_CAR_LEN = { MeshySedan = 14, MeshySUV = 14, MeshyPickup = 16.5, MeshyMinivan = 15, MeshyHatchback = 11.5 }
+function Lib.meshyCar(parent, cfGround, kind)
+	kind = kind or Lib.MESHY_CARS[Lib.rng:NextInteger(1, #Lib.MESHY_CARS)]
+	local src = city:FindFirstChild(kind)
+	if not src then
+		return nil
+	end
+	local m = Instance.new("Model")
+	m.Name = "ParkedCar"
+	m:SetAttribute("Meshy", kind)
+	local p = src:Clone()
+	local s = src.Size * ((Lib.MESHY_CAR_LEN[kind] or 14) / src.Size.X)
+	p.Size = s
+	p.CFrame = cfGround * CFrame.new(0, s.Y / 2, 0) * CFrame.Angles(0, math.pi / 2, 0)
+	p.Anchored = true
+	p.CanCollide = false
+	p.CanQuery = false
+	p.CanTouch = false
+	p.CastShadow = true
+	p.Name = "Body"
+	p.Parent = m
+	local box = Lib.part(m, cfGround * CFrame.new(0, s.Y * 0.45, 0), V(s.Z * 0.95, s.Y * 0.9, s.X * 0.97), Color3.new(), M.SmoothPlastic, { Transparency = 1, Name = "Collision", CastShadow = false, CanTouch = false })
+	m.PrimaryPart = box
+	m.Parent = parent
+	Lib.yield(4)
+	return m
+end
+
 -- Véhicule décoratif (Assets.Car / Truck / Van), ancré, cfGround = au sol, avant vers LookVector
 function Lib.vehicle(kind, parent, cfGround, color)
 	local src = assets:FindFirstChild(kind)
