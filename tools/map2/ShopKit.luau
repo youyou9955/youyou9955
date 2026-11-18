@@ -75,15 +75,20 @@ local function wallShelf(h, parent, x, s, z1, z2, th, rng)
 	end
 end
 
-local function counter(h, parent, cx, cz, w, accent)
-	P(h, parent, CFrame.new(cx, 1.75, cz), V(w, 3.5, 2.6), WHITE, M.SmoothPlastic, true)
-	P(h, parent, CFrame.new(cx, 3.6, cz), V(w + 0.3, 0.2, 2.9), rgb(70, 64, 58), M.Wood, false)
-	P(h, parent, CFrame.new(cx, 1.6, cz - 1.31), V(w, 0.5, 0.04), accent, M.SmoothPlastic, false)
-	-- caisse enregistreuse et terminal
-	P(h, parent, CFrame.new(cx - w / 4, 4, cz + 0.3), V(1.6, 0.6, 1.2), rgb(40, 42, 46), M.SmoothPlastic, false)
-	P(h, parent, CFrame.new(cx - w / 4, 4.8, cz + 0.5) * CFrame.Angles(math.rad(-20), 0, 0), V(1.4, 1, 0.12), rgb(30, 32, 36), M.SmoothPlastic, false)
-	P(h, parent, CFrame.new(cx - w / 4, 4.8, cz + 0.43) * CFrame.Angles(math.rad(-20), 0, 0), V(1.2, 0.8, 0.02), rgb(90, 170, 220), M.Neon, false)
-	P(h, parent, CFrame.new(cx + w / 4, 3.95, cz - 0.4), V(0.5, 0.5, 0.8), rgb(36, 38, 42), M.SmoothPlastic, false)
+local function counter(h, parent, cx, cz, len, accent, alongZ)
+	-- comptoir le long de Z (face client vers le centre du magasin)
+	local function C(x, y, z, sx, sy, sz, col, mat, collide, extra)
+		return P(h, parent, CFrame.new(cx + x, y, cz + z), alongZ and V(sz, sy, sx) or V(sx, sy, sz), col, mat, collide, extra)
+	end
+	local s = cx > 0 and -1 or 1 -- côté client (vers le centre)
+	P(h, parent, CFrame.new(cx, 1.9, cz), V(2.6, 3.5, len), WHITE, M.SmoothPlastic, true)
+	P(h, parent, CFrame.new(cx, 3.75, cz), V(2.9, 0.2, len + 0.3), rgb(70, 64, 58), M.Wood, false)
+	P(h, parent, CFrame.new(cx + s * 1.31, 1.7, cz), V(0.04, 0.5, len), accent, M.SmoothPlastic, false)
+	-- caisse enregistreuse, écran, terminal de paiement
+	P(h, parent, CFrame.new(cx - s * 0.3, 4.15, cz - len / 4), V(1.2, 0.6, 1.6), rgb(40, 42, 46), M.SmoothPlastic, false)
+	P(h, parent, CFrame.new(cx - s * 0.4, 4.95, cz - len / 4) * CFrame.Angles(0, s * math.pi / 2, 0) * CFrame.Angles(math.rad(-20), 0, 0), V(1.4, 1, 0.12), rgb(30, 32, 36), M.SmoothPlastic, false)
+	P(h, parent, CFrame.new(cx - s * 0.33, 4.95, cz - len / 4) * CFrame.Angles(0, s * math.pi / 2, 0) * CFrame.Angles(math.rad(-20), 0, 0), V(1.2, 0.8, 0.02), rgb(90, 170, 220), M.Neon, false)
+	P(h, parent, CFrame.new(cx + s * 0.6, 4.1, cz + len / 4), V(0.8, 0.5, 0.5), rgb(36, 38, 42), M.SmoothPlastic, false)
 end
 
 local function ceilingLight(h, parent, cx, y, cz, lit)
@@ -194,9 +199,9 @@ function K.build(parent, cf, spec, rng)
 	box(h, inter, dx - 3.5, 0.36, za, dx + 3.5, 0.4, za + 4, rgb(60, 56, 54), M.Fabric, true)
 	box(h, shell, dx - 4, 0, -2.2, dx + 4, 0.3, 0, rgb(170, 166, 160), M.Concrete, false)
 	-- bandeau d'enseigne et auvent
-	local sg = ax(h, shell, "x", 0, GH - 0.9, -0.35, W * 0.78, 2.2, 0.3, accent, M.SmoothPlastic, true)
+	local sg = ax(h, shell, "x", 0, 11.4, -0.35, W * 0.74, 1.8, 0.3, accent, M.SmoothPlastic, true)
 	Lib.label(sg, Enum.NormalId.Front, spec.label or "MAGASIN", WHITE, nil, Enum.Font.FredokaOne, true)
-	local awn = Lib.part(shell, h.cf * CFrame.new(0, 10.6, -1.6) * CFrame.Angles(0, math.pi, 0), V(W - 1.5, 1.2, 3.2), accent, M.Fabric, { Class = "WedgePart", Name = "Awning", CanCollide = false, CanQuery = false, CanTouch = false })
+	local awn = Lib.part(shell, h.cf * CFrame.new(0, 9.75, -1.6) * CFrame.Angles(0, math.pi, 0), V(W - 1.5, 1.2, 3.2), accent, M.Fabric, { Class = "WedgePart", Name = "Awning", CanCollide = false, CanQuery = false, CanTouch = false })
 	-- pilastres d'angle et corniche
 	for _, s in { -1, 1 } do
 		box(h, shell, s * W / 2 - 0.6, 0, -0.3, s * W / 2 + 0.6, H, 0.6, wcol:Lerp(Color3.new(0, 0, 0), 0.12), wmat, true)
@@ -205,7 +210,7 @@ function K.build(parent, cf, spec, rng)
 	box(h, shell, -W / 2, H + 1, -0.3, W / 2, H + 2.4, 0.4, rgb(214, 210, 202), M.Concrete, true)
 	-- appliques extérieures
 	for _, s in { -1, 1 } do
-		local lp = mk(h, shell, s * (W / 2 - 1.6), 9, -0.5, 0.6, 0.9, 0.6, rgb(255, 236, 190), M.Neon, true)
+		local lp = mk(h, shell, s * (W / 2 - 1.6), 11.4, -0.5, 0.6, 0.9, 0.6, rgb(255, 236, 190), M.Neon, true)
 	end
 	-- étages : plancher fermé + fenêtres teintées sur la façade
 	if floors > 0 then
@@ -255,59 +260,87 @@ function K.build(parent, cf, spec, rng)
 	rl.Parent = ceilingLight(h, furn, 0, GH - 0.2, (RZ + zb) / 2, false)
 
 	---------------------------------------------------------------- surface de vente
-	-- comptoir et caisse côté opposé à la porte, près de l'entrée
+	-- comptoir perpendiculaire à la façade, côté opposé à la porte, avec présentoir mural derrière
 	local cs = dx >= 0 and -1 or 1
-	local cw = 8
-	local ccx = cs * (W / 2 - EXT - 3 - cw / 2) + (cs > 0 and 0 or 0)
-	counter(h, furn, ccx, 8.5, cw, accent)
-	-- présentoir derrière la caisse
-	wallShelf(h, furn, cs * (W / 2 - EXT - 0.1), cs, 5, 12, th, rng)
-	-- rayonnages muraux de l'autre côté
-	wallShelf(h, furn, -cs * (W / 2 - EXT - 0.1), -cs, 4, RZ - 1, th, rng)
-	wallShelf(h, furn, cs * (W / 2 - EXT - 0.1), cs, 15, RZ - 1, th, rng)
-	-- gondoles centrales (allées de 4,5 studs minimum)
-	local inner = W - 2 * EXT - 2 * 1.6 -- largeur entre rayonnages muraux
-	local ng = math.max(1, math.floor((inner - 4.5) / (3.2 + 4.8)))
-	local gz1, gz2 = 15, RZ - 4.5
+	local xin = W / 2 - EXT -- face intérieure des murs latéraux
+	local cl = math.min(9, RZ - 9)
+	local ccx = cs * (xin - 1.6 - 2.6 - 1.3)
+	counter(h, furn, ccx, 4.5 + cl / 2, cl, accent, true)
+	wallShelf(h, furn, cs * xin, cs, 4, 4.5 + cl + 0.5, th, rng)
+	if RZ - 1 - (5.5 + cl) > 3 then
+		wallShelf(h, furn, cs * xin, cs, 5.5 + cl, RZ - 1, th, rng)
+	end
+	-- rayonnage mural de l'autre côté
+	wallShelf(h, furn, -cs * xin, -cs, 4, RZ - 1, th, rng)
+	-- zone centrale : gondoles avec allées d'au moins 4,5 studs
+	local zx1 = -cs > 0 and (xin - 1.6 - 4.5) or -(xin - 1.6 - 4.5) -- bord côté rayonnage mural opposé
+	local zx2 = ccx - cs * (1.3 + 4.5) -- bord côté comptoir
+	local lo, hi = math.min(zx1, zx2), math.max(zx1, zx2)
+	local gz1, gz2 = 7, RZ - 4.5
 	if th.laundry then
-		-- laverie : machines en rangées
-		for i = 0, math.floor((gz2 - gz1) / 3.4) - 1 do
+		-- laverie : rangée double de machines au centre, bancs le long du mur
+		local cxm = (lo + hi) / 2
+		for z = gz1, gz2 - 3, 3.4 do
 			for _, s in { -1, 1 } do
-				local x = -cs * 0 + s * 3
-				P(h, furn, CFrame.new(x, 1.8, gz1 + i * 3.4 + 1.6), V(3, 3.6, 3), rgb(244, 244, 244), M.SmoothPlastic, true)
-				P(h, furn, CFrame.new(x - s * 1.52, 2.1, gz1 + i * 3.4 + 1.6), V(0.06, 1.8, 1.8), rgb(110, 130, 150), M.Glass, false, { Transparency = 0.3 })
+				local x = cxm + s * 1.55
+				P(h, furn, CFrame.new(x, 1.8, z + 1.6), V(3, 3.6, 3), rgb(244, 244, 244), M.SmoothPlastic, true)
+				P(h, furn, CFrame.new(x + s * 1.52, 2.1, z + 1.6), V(0.06, 1.8, 1.8), rgb(110, 130, 150), M.Glass, false, { Transparency = 0.3 })
+				P(h, furn, CFrame.new(x + s * 1.53, 3.3, z + 2.5), V(0.05, 0.3, 0.5), rgb(60, 200, 120), M.Neon, false)
 			end
 		end
 	elseif th.racks then
-		-- vélos accrochés au mur (cadres simplifiés) et vélos posés au sol
-		for i = 0, 3 do
-			local z = gz1 + i * 4
-			local col = th.products[i % #th.products + 1]
-			for _, s in { -1, 1 } do
-				P(h, furn, CFrame.new(s * 1.8, 1.5, z) * CFrame.Angles(0, 0, 0), V(0.3, 3, 0.3), rgb(40, 40, 44), M.Metal, false)
+		-- vélos exposés en rangée au centre
+		local cxm = (lo + hi) / 2
+		for z = gz1, gz2 - 2, 3 do
+			local col = th.products[rng:NextInteger(1, #th.products)]
+			local b = h.cf * CFrame.new(cxm, 0.36, z + 1) * CFrame.Angles(0, math.pi / 2, 0)
+			Lib.part(furn, b * CFrame.new(0, 2.3, 0), V(3.2, 0.25, 0.25), col, M.Metal, props(true))
+			Lib.part(furn, b * CFrame.new(1.2, 1.7, 0) * CFrame.Angles(0, 0, math.rad(60)), V(1.6, 0.22, 0.22), col, M.Metal, props(true))
+			Lib.part(furn, b * CFrame.new(-1.3, 2.9, 0), V(0.2, 1.2, 0.2), rgb(40, 40, 44), M.Metal, props(true))
+			Lib.part(furn, b * CFrame.new(1.4, 3, 0), V(0.25, 0.2, 1.6), rgb(40, 40, 44), M.Metal, props(true))
+			for _, s2 in { -1, 1 } do
+				Lib.cylDeco(furn, b * CFrame.new(s2 * 1.7, 1.25, 0) * CFrame.Angles(math.pi / 2, 0, 0), 0.25, 2.5, rgb(30, 30, 32), M.Rubber)
 			end
-			P(h, furn, CFrame.new(0, 2.4, z), V(3.4, 0.25, 0.25), col, M.Metal, false)
-			for _, s in { -1, 1 } do
-				Lib.cylDeco(furn, h.cf * CFrame.new(s * 2.2, 1.3, z) * CFrame.Angles(math.pi / 2, 0, 0), 0.2, 2.6, rgb(30, 30, 32), M.Rubber)
+			P(h, furn, CFrame.new(cxm, 0.8, z + 1), V(0.6, 0.9, 3.8), rgb(80, 82, 88), M.Metal, true)
+		end
+	elseif th.tables then
+		-- tables d'exposition (téléphones) en îlots
+		local cxm = (lo + hi) / 2
+		for z = gz1 + 2, gz2 - 2, 6 do
+			P(h, furn, CFrame.new(cxm, 1.7, z), V(4, 3.4, 3), rgb(236, 232, 226), M.Wood, true)
+			for k = -1, 1 do
+				for _, s2 in { -1, 1 } do
+					P(h, furn, CFrame.new(cxm + k * 1.2, 3.47, z + s2 * 0.8), V(0.5, 0.06, 0.9), th.products[rng:NextInteger(1, #th.products)], M.SmoothPlastic, false)
+				end
 			end
 		end
 	else
+		local ng = math.max(1, math.floor((hi - lo + 4.5) / (3.2 + 4.5)))
 		for i = 0, ng - 1 do
-			local x = -inner / 2 + 4.5 + 1.6 + i * (inner - 9) / math.max(1, ng - 1)
-			if ng == 1 then
-				x = 0
-			end
+			local x = ng == 1 and (lo + hi) / 2 or (lo + 1.6 + i * (hi - lo - 3.2) / (ng - 1))
 			gondola(h, furn, x, gz1, gz2, th, rng)
 		end
 	end
-	-- table de présentation devant la vitrine (côté porte), produits vedettes
-	local tx = -cs * (W / 4 + 1)
-	if math.abs(tx - dx) > DW / 2 + 3 then
-		P(h, furn, CFrame.new(tx, 1.4, 5), V(5, 2.8, 3), th.shelf:Lerp(Color3.new(0, 0, 0), 0.15), M.Wood, true)
-		products(h, furn, tx, 2.8, 5, 4.6, 2.4, true, th, rng)
+	-- podiums de vitrine (derrière le verre, hors passage de la porte)
+	for _, wv in { winL, winR } do
+		local x1, x2 = wv[1] + 0.3, wv[2] - 0.3
+		if wv[2] <= dx then
+			x2 = math.min(x2, dx - DW / 2 - 1.5)
+		else
+			x1 = math.max(x1, dx + DW / 2 + 1.5)
+		end
+		-- pas de podium devant le comptoir
+		if cs * ((x1 + x2) / 2) > 0 then
+			x2 = cs > 0 and math.min(x2, ccx - 1.3 - 1) or x2
+			x1 = cs < 0 and math.max(x1, ccx + 1.3 + 1) or x1
+		end
+		if x2 - x1 > 2.5 then
+			P(h, furn, CFrame.new((x1 + x2) / 2, 0.85, 2.1), V(x2 - x1, 1, 2.2), th.shelf:Lerp(Color3.new(0, 0, 0), 0.1), M.Wood, true)
+			products(h, furn, (x1 + x2) / 2, 1.35, 2.1, x2 - x1 - 0.4, 1.6, true, th, rng)
+		end
 	end
-	-- plantes et poubelle près de l'entrée
-	L.F.plant(furn, h.cf * CFrame.new(dx + cs * -(DW / 2 + 1.6), 0.36, za + 1.4))
+	-- plante près de l'entrée
+	L.F.plant(furn, h.cf * CFrame.new(dx - cs * (DW / 2 + 1.6), 0.36, za + 4.2))
 
 	model.PrimaryPart = found
 	model:SetAttribute("ShopTheme", spec.theme or "")
