@@ -264,9 +264,6 @@ function Lib.vehicle(kind, parent, cfGround, color)
 			if d.Transparency < 1 then
 				d.CanCollide = false
 			end
-			if color and d:IsA("MeshPart") and d.Size.Magnitude > size.Magnitude * 0.6 then
-				d.Color = color
-			end
 		elseif d:IsA("Script") or d:IsA("LocalScript") or d:IsA("Constraint") or d:IsA("Attachment") or d:IsA("Seat") then
 			d:Destroy()
 		end
@@ -430,6 +427,48 @@ function Lib.container(parent, cf, color)
 		Lib.fine(m, cf * CFrame.new(-4.05, 4.25, k * 2.1), V(0.15, 8, 0.6), color:Lerp(Color3.new(0, 0, 0), 0.18), M.Metal)
 	end
 	Lib.fine(m, cf * CFrame.new(0, 4.25, 10.05), V(7.4, 8, 0.15), color:Lerp(Color3.new(0, 0, 0), 0.12), M.Metal)
+	return m
+end
+
+
+---------------------------------------------------------------- Parkings et entrées
+-- Parking : cf au centre (au sol), w x d ; places de 10 x 18 de part et d'autre d'allées
+function Lib.parking(parent, cf, w, d, fill, kinds)
+	local m = Lib.model(parent, "Parking")
+	Lib.part(m, cf * CFrame.new(0, 0.05, 0), V(w, 0.5, d), Lib.C.asphaltDark, M.Asphalt, { Name = "Lot" })
+	local rows = math.floor(d / 60)
+	local nSpots = math.floor((w - 4) / 10)
+	local zs = {}
+	for r = 0, math.max(rows, 1) - 1 do
+		local zc = -d / 2 + 30 + r * 60
+		if rows == 0 then
+			zc = 0
+		end
+		table.insert(zs, { zc - 12 - 9, 1 })
+		table.insert(zs, { zc + 12 + 9, -1 })
+	end
+	for _, row in zs do
+		local zc, face = row[1], row[2]
+		if math.abs(zc) + 9 <= d / 2 then
+			for k = 0, nSpots do
+				local x = -w / 2 + 2 + k * 10 + (w - 4 - nSpots * 10) / 2
+				Lib.mark(m, cf * CFrame.new(x, 0.32, zc), V(0.35, 0.05, 17), Lib.C.white)
+				if k < nSpots and Lib.rng:NextNumber() < (fill or 0.5) then
+					local kind = kinds and kinds[Lib.rng:NextInteger(1, #kinds)] or "Car"
+					Lib.vehicle(kind, Lib.path("DecorativeVehicles"), cf * CFrame.new(x + 5, 0.3, zc) * CFrame.Angles(0, face > 0 and 0 or math.pi, 0))
+				end
+			end
+		end
+	end
+	return m
+end
+
+-- Entrée charretière : rampe à travers le trottoir. cf au bord de la chaussée, LookVector vers le terrain
+function Lib.driveway(parent, cf, width, depth)
+	depth = depth or 12
+	local m = Lib.model(parent, "Driveway")
+	Lib.part(m, cf * CFrame.new(0, 0.42, -depth / 2), V(width, 0.9, depth), rgb(196, 192, 184), M.Concrete, { Name = "Slab" })
+	Lib.wedge(m, cf * CFrame.new(0, 0.52, 0.9) * CFrame.Angles(0, math.pi, 0), V(width, 0.7, 1.8), rgb(196, 192, 184), M.Concrete, { Name = "Ramp" })
 	return m
 end
 
