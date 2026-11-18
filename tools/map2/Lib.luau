@@ -325,9 +325,22 @@ function Lib.bush(parent, pos, h)
 	return Lib.asset("BushL", parent, CFrame.new(pos) * CFrame.Angles(0, Lib.rng:NextNumber(0, 6.28), 0), h or Lib.rng:NextNumber(2.6, 4), false, "Bush")
 end
 
+-- Arbres générés avec Meshy AI (ReplicatedStorage.Assets.City.Meshy*) ; repli sur les anciens si absents.
+Lib.MESHY_ROUND = { "MeshyOak", "MeshyMaple", "MeshyBirch" }
+function Lib.treeAsset(kind)
+	if kind == "palm" then
+		return "TreePalm"
+	end
+	if kind == "pine" then
+		return city:FindFirstChild("MeshyPine") and "MeshyPine" or "PineL"
+	end
+	local n = Lib.MESHY_ROUND[Lib.rng:NextInteger(1, #Lib.MESHY_ROUND)]
+	return city:FindFirstChild(n) and n or "TreeL"
+end
+
 function Lib.tree(parent, pos, kind, h)
 	kind = kind or (Lib.rng:NextNumber() < 0.78 and "round" or "pine")
-	local name = kind == "pine" and "PineL" or (kind == "palm" and "TreePalm" or "TreeL")
+	local name = Lib.treeAsset(kind)
 	h = h or (kind == "pine" and Lib.rng:NextNumber(18, 28) or Lib.rng:NextNumber(14, 22))
 	local t = Lib.asset(name, parent, CFrame.new(pos) * CFrame.Angles(0, Lib.rng:NextNumber(0, 6.28), 0), h, false, "Tree")
 	if t then
