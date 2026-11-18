@@ -428,6 +428,7 @@ end
 
 
 ---------------------------------------------------------------- terrains d'angle : rien ne doit empiéter sur les routes
+local removedLog = {}
 local roadOv = OverlapParams.new()
 roadOv.FilterType = Enum.RaycastFilterType.Include
 local function hitsRoad(p)
@@ -463,6 +464,9 @@ local function cleanLot(dirs, tag)
 				local parts = c:IsA("BasePart") and { c } or c:GetDescendants()
 				for _, p in parts do
 					if p:IsA("BasePart") and p.Name ~= "Ramp" and p.Name ~= "Slab" and hitsRoad(p) then
+						local hit = workspace:GetPartBoundsInBox(p.CFrame, p.Size * 0.92, roadOv)[1]
+						local key = c.Name .. "/" .. p.Name .. ">" .. hit.Parent.Name .. "." .. hit.Name
+						removedLog[key] = (removedLog[key] or 0) + 1
 						c:Destroy()
 						n += 1
 						break
@@ -570,5 +574,9 @@ return function()
 	for _ in used do
 		kinds += 1
 	end
-	return ("maisons Meshy : %d terrains, %d modèles différents, %d éléments retirés des routes"):format(n, kinds, fixed)
+	local log = {}
+	for k, v in removedLog do
+		table.insert(log, k .. "=" .. v)
+	end
+	return ("maisons Meshy : %d terrains, %d modèles différents, %d éléments retirés des routes (%s)"):format(n, kinds, fixed, table.concat(log, ", "))
 end
