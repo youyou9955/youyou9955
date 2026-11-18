@@ -196,7 +196,7 @@ return function()
 					-- dégage arbres et rochers derrière la lettre
 					for _, p in workspace:GetPartBoundsInBox(e[1], V(20, 22, 6), ov) do
 						local m = p:FindFirstAncestorWhichIsA("Model")
-						if m and (p:IsDescendantOf(Lib.path("Vegetation")) or m.Name == "Rock") then
+						if m and m ~= workspace and m.Parent ~= workspace and (p:IsDescendantOf(Lib.path("Vegetation")) or m.Name == "Rock") then
 							m:Destroy()
 						end
 					end
