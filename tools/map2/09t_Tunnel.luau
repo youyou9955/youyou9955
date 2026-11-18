@@ -24,7 +24,7 @@ local function tunnel(parent)
 		-- tranchée d'accès devant le portail
 		T:FillBlock(CFrame.new(0, 40, pz + s * 40), V(W + 26, 80, 80), M.Air)
 	end
-	T:FillBlock(CFrame.new(0, H / 2, cz), V(W + 4, H + 2, len + 30), M.Air)
+	T:FillBlock(CFrame.new(0, H / 2 + 2, cz), V(W + 14, H + 10, len + 30), M.Air)
 	Lib.part(m, CFrame.new(0, -0.4, cz), V(W + 4, 1, len + 20), rgb(120, 118, 116), M.Concrete, { Name = "Floor" })
 	local wallC, ceilC = rgb(230, 226, 214), rgb(200, 196, 186)
 	for _, s in { -1, 1 } do
