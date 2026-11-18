@@ -252,6 +252,9 @@ local function buildNode(n)
 	local swX, swZ = n.swX, n.swZ
 	local g = Lib.model(F.inter, "Intersection")
 	Lib.part(g, CFrame.new(n.x, Y - 0.7, n.z), V(n.wx, 1.4, n.wz), C.asphalt, M.Asphalt, { Name = "Road" })
+	if Plan.rural(n.x, n.z) then
+		return
+	end
 	-- coins de trottoir et trottoirs qui traversent les bras absents
 	for _, sx in { -1, 1 } do
 		for _, sz in { -1, 1 } do
@@ -329,7 +332,7 @@ end
 
 -- feux : version définitive avec le bras au-dessus des voies
 local function placeLights(n)
-	if n.rb then
+	if n.rb or Plan.rural(n.x, n.z) then
 		return
 	end
 	for k in n.kinds do

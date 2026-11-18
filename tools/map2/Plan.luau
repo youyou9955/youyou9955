@@ -27,6 +27,7 @@ Plan.lines = L
 add("X", 0, -1250, 1300, "main", "BoulevardCentral")
 add("Z", 0, -720, 1060, "main", "AvenueDesLivreurs")
 add("Z", 0, -1250, -720, "main", "RouteDuTunnel")
+add("X", 1060, -600, 0, "sec", "RouteDuLac")
 -- Périphérique : côtés droits (les coins sont des arcs, voir Plan.ringArcs)
 local RX, RZ, RR = 900, 720, 140
 Plan.ring = { x = RX, z = RZ, r = RR }
@@ -174,6 +175,9 @@ local flatRoads = {
 	{ V(0, 0, 720), V(0, 0, 1060), 48 },
 	{ V(0, 0, -720), V(0, 0, -860), 48 }, -- entrée du tunnel (la crête reste au-dessus du tunnel)
 	{ V(0, 0, -1080), V(0, 0, -1250), 48 },
+	{ V(-600, 0, 1060), V(0, 0, 1060), 32 },
+	{ V(-60, 0, -1250), V(60, 0, -1250), 90 }, -- belvédère du nord
+	{ V(1180, 0, -40), V(1360, 0, -260), 120 }, -- ferme
 }
 Plan.flatRoads = flatRoads
 Plan.tunnel = { x = 0, z1 = -860, z2 = -1080 }
@@ -219,7 +223,7 @@ function Plan.height(x, z)
 	local ez = math.max(math.abs(z) - 1260, 0)
 	local e = math.sqrt(ex * ex + ez * ez)
 	if e > 0 then
-		h = math.max(h, math.min(e * 1.6, 260) + 30 * math.noise(x / 120, z / 120, 9.9))
+		h = math.max(h, math.min(e * 0.85, 210) + 26 * math.noise(x / 160, z / 160, 9.9) * math.min(e / 60, 1))
 	end
 	-- routes extérieures : sol à plat
 	for _, r in flatRoads do

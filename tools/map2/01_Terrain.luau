@@ -51,7 +51,7 @@ return function()
 						top = M.Sand
 					elseif h < 2 and (V(cx + (i - 0.5) * RES, 0, cz + (j - 0.5) * RES) - Plan.river.lake.c).Magnitude < Plan.river.lake.r + 30 then
 						top = M.Sand
-					elseif h > 170 then
+					elseif h > 185 then
 						top = M.Snow
 					elseif slope > 1.05 then
 						top = M.Rock
