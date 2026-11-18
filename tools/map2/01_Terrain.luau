@@ -67,9 +67,9 @@ return function()
 						local o = math.clamp((h - y0) / RES - 0.5, 0, 1) -- surface lisse à y = h
 						local m
 						if o > 0 then
-							if y0 + RES < h - 8 then
+							if y0 + RES < h - 14 then
 								m = M.Rock
-							elseif y0 + RES < h - 3 and top ~= M.Sand then
+							elseif y0 + RES < h - 7 and top ~= M.Sand then
 								m = M.Ground
 							else
 								m = top
