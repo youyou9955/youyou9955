@@ -58,8 +58,8 @@ return function()
 		-- allée jusqu'à la route + boîte aux lettres
 		local hx = 0
 		for _, d in hm:GetDescendants() do
-			if d:IsA("Model") and d.Name == "Door" and d:FindFirstChild("Hinge") then
-				local lp = cf:PointToObjectSpace(d.Hinge.Position)
+			if d:IsA("Model") and d.Name == "Door" and d:FindFirstChild("Panel") then
+				local lp = cf:PointToObjectSpace(d.Panel.Position) -- centre du vantail (pas la charnière)
 				if math.abs(lp.Z - fz) < 1.5 then
 					hx = lp.X
 					break
@@ -68,7 +68,7 @@ return function()
 		end
 		local pz0 = -17
 		Lib.part(yard, cf * CFrame.new(hx, 0.05, (pz0 + fz) / 2), V(4, 0.6, fz - pz0), rgb(200, 190, 176), M.Pavement, { Name = "Path" })
-		Lib.mailbox(yard, cf * CFrame.new(hx + 3.5, 0, pz0 + 2))
+		Lib.mailbox(yard, cf * CFrame.new(hx + (hx > 0 and -4.2 or 4.2), 0, pz0 + 2))
 		-- haie basse de part et d'autre de l'allée
 		for _, s in { -1, 1 } do
 			local a, b = s > 0 and hx + 2.6 or -W / 2 + 1, s > 0 and W / 2 - 1 or hx - 2.6
