@@ -247,8 +247,8 @@ local function buildLot(dirs, lotCf, lw, ld, typ, tag, extraSetback, lastPal)
 		local col = typ == "villa" and rgb(214, 204, 186) or rgb(192, 190, 184)
 		Lib.part(garden, lotCf * CFrame.new(gx, 0.15, dl / 2), V(dw, 0.3, dl), col, typ == "villa" and M.Pavement or M.Concrete, { Name = "Driveway" })
 		Lib.driveway(garden, lotCf * CFrame.new(gx, 0, -sw) * CFrame.Angles(0, math.pi, 0), dw, sw)
-		local cz = math.max(8.5, setback - 8.5)
-		if rng:NextNumber() < 0.7 and (not info.garage or cz <= dl - 8) then
+		local cz = info.garage and math.max(8.5, dl - 8.5) or math.max(8.5, setback - 8.5)
+		if rng:NextNumber() < 0.75 and (not info.garage or cz <= dl - 7.5) then
 			local ccf = lotCf * CFrame.new(gx, 0.3, cz) * CFrame.Angles(0, rng:NextNumber() < 0.5 and 0 or math.pi, 0)
 			local car = Lib.meshyCar(Lib.path("DecorativeVehicles"), ccf)
 			if car then
