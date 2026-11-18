@@ -69,6 +69,32 @@ return function()
 		local pz0 = -17
 		Lib.part(yard, cf * CFrame.new(hx, 0.05, (pz0 + fz) / 2), V(4, 0.6, fz - pz0), rgb(200, 190, 176), M.Pavement, { Name = "Path" })
 		Lib.mailbox(yard, cf * CFrame.new(hx + (hx > 0 and -4.2 or 4.2), 0, pz0 + 2))
+		-- ouverture dans la glissière / le mur de soutènement au bout de l'allée (accès à pied), marches si besoin
+		local op = OverlapParams.new()
+		op.FilterType = Enum.RaycastFilterType.Include
+		op.FilterDescendantsInstances = { Lib.path("Roads") }
+		local cut = 0
+		for _, g in workspace:GetPartBoundsInBox(cf * CFrame.new(hx, 1, pz0 - 2.5), V(5.5, 10, 9), op) do
+			if g.Size.Y >= 0.25 and math.min(g.Size.X, g.Size.Z) <= 2.3 and math.max(g.Size.X, g.Size.Z) > 3 then
+				g:Destroy()
+				cut += 1
+			end
+		end
+		local rp = RaycastParams.new()
+		rp.FilterType = Enum.RaycastFilterType.Include
+		rp.FilterDescendantsInstances = { Lib.path("Roads") }
+		local hit = workspace:Raycast((cf * CFrame.new(hx, 12, pz0 - 7)).Position, V(0, -40, 0), rp)
+		if hit then
+			local drop = base.Y - hit.Position.Y
+			if drop > 0.9 then
+				local n = math.ceil(drop / 0.9)
+				for k = 1, n - 1 do
+					local ht = drop * (n - k) / n + 0.35
+					Lib.part(yard, cf * CFrame.new(hx, hit.Position.Y - base.Y + ht / 2, pz0 - 1.2 * (k - 0.5)), V(4, ht, 1.2), rgb(190, 184, 172), M.Concrete, { Name = "Step" })
+				end
+			end
+		end
+		yard:SetAttribute("RailCut", cut)
 		-- haie basse de part et d'autre de l'allée
 		for _, s in { -1, 1 } do
 			local a, b = s > 0 and hx + 2.6 or -W / 2 + 1, s > 0 and W / 2 - 1 or hx - 2.6
