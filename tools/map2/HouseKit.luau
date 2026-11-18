@@ -781,8 +781,11 @@ local function furnish(h, room, rng, pal)
 				local tw, td = 6.5, 3.6
 				local fx, fz = rot and tw or td + 4.6, rot and td + 4.6 or tw
 				local px, pz = cx + (rot and dd or 0), cz + (rot and 0 or dd)
-				local rect = { px - fx / 2, px + fx / 2, pz - fz / 2, pz + fz / 2 }
-				if free(room, rect, false) then
+				-- dégagement de 3 studs autour des chaises pour circuler
+				local cxl, czl = rot and 1.5 or 3, rot and 3 or 1.5
+				local core = { px - fx / 2, px + fx / 2, pz - fz / 2, pz + fz / 2 }
+				local rect = { math.max(room.x1, core[1] - cxl), math.min(room.x2, core[2] + cxl), math.max(room.z1, core[3] - czl), math.min(room.z2, core[4] + czl) }
+				if free(room, core, false) and free(room, rect, false) then
 					table.insert(room.items, rect)
 					local base = world(CFrame.new(px, 0, pz) * CFrame.Angles(0, rot and 0 or math.pi / 2, 0))
 					F.table(p, base, tw, td)
