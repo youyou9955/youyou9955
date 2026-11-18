@@ -158,6 +158,18 @@ function Lib.pick(t, rng)
 end
 
 ---------------------------------------------------------------- Texte et panneaux
+-- Polices du jeu : Montserrat ExtraBold pour les enseignes et titres, Roboto Condensed Bold pour la
+-- signalisation routière (noms de rues, STOP, P, H). L'ancien Enum.Font passé en argument choisit la catégorie.
+Lib.FONT_DISPLAY = Font.new("rbxasset://fonts/families/Montserrat.json", Enum.FontWeight.ExtraBold)
+Lib.FONT_ROAD = Font.new("rbxasset://fonts/families/RobotoCondensed.json", Enum.FontWeight.Bold)
+function Lib.fontFor(font)
+	local n = font and font.Name or ""
+	if n:find("Gotham") then
+		return Lib.FONT_ROAD
+	end
+	return Lib.FONT_DISPLAY
+end
+
 function Lib.label(part, face, text, fg, bg, font, glow, ppS)
 	local g = Instance.new("SurfaceGui")
 	g.Face = face or Enum.NormalId.Front
@@ -172,7 +184,7 @@ function Lib.label(part, face, text, fg, bg, font, glow, ppS)
 	t.BackgroundTransparency = bg and 0 or 1
 	t.BackgroundColor3 = bg or Color3.new(0, 0, 0)
 	t.TextColor3 = fg or Color3.new(1, 1, 1)
-	t.Font = font or Enum.Font.FredokaOne
+	t.FontFace = Lib.fontFor(font)
 	t.TextScaled = true
 	t.Text = text
 	t.Parent = g
