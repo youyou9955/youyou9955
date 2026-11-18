@@ -42,6 +42,7 @@ return function()
 		until spec.pal ~= lastPal
 		lastPal = spec.pal
 		spec.name = "HillHouse_" .. idx
+		spec.furnish = workspace:GetAttribute("FurnishAll") and true or nil
 		local fz = pad.plateau and -12 or -8 -- façade
 		local hm = HK.build(root, cf * CFrame.new(0, 0, fz), spec, rng)
 		-- socle : dalle sur un massif en pierre qui descend dans la pente

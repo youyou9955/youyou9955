@@ -223,9 +223,9 @@ local function buildLot(dirs, lotCf, lw, ld, typ, tag, extraSetback, lastPal)
 	end
 	spec.name = tag .. "_" .. typ
 	-- maison modèle (meublée) : première maison à étage avec garage ; HK.FURNISH_ALL meuble toutes les maisons
-	if HK.FURNISH_ALL or (not Lib.MODEL_HOUSE and typ == "twostory" and spec.garage) then
+	if HK.FURNISH_ALL or workspace:GetAttribute("FurnishAll") or (not Lib.MODEL_HOUSE and typ == "twostory" and spec.garage) then
 		spec.furnish = true
-		if not HK.FURNISH_ALL then
+		if not (HK.FURNISH_ALL or workspace:GetAttribute("FurnishAll")) then
 			Lib.MODEL_HOUSE = spec.name
 		end
 	end
@@ -256,7 +256,8 @@ local function buildLot(dirs, lotCf, lw, ld, typ, tag, extraSetback, lastPal)
 		Lib.driveway(garden, lotCf * CFrame.new(gx, 0, -sw) * CFrame.Angles(0, math.pi, 0), dw, sw)
 		local cz = info.garage and math.max(8.5, dl - 8.5) or math.max(8.5, setback - 8.5)
 		if rng:NextNumber() < 0.75 and (not info.garage or cz <= dl - 7.5) then
-			local ccf = lotCf * CFrame.new(gx, 0.3, cz) * CFrame.Angles(0, rng:NextNumber() < 0.5 and 0 or math.pi, 0)
+			local off = info.garage and (rng:NextNumber() < 0.5 and -1 or 1) * math.max(0, dw / 2 - 3.8) or 0 -- passage libre devant la porte du garage
+			local ccf = lotCf * CFrame.new(gx + off, 0.3, cz) * CFrame.Angles(0, rng:NextNumber() < 0.5 and 0 or math.pi, 0)
 			local car = Lib.meshyCar(Lib.path("DecorativeVehicles"), ccf)
 			if car then
 				car:SetAttribute("Lot", tag)
