@@ -18,13 +18,16 @@ local WHITE = rgb(242, 240, 234)
 
 -- thèmes : couleurs des produits et mobilier spécifique
 K.THEMES = {
+	hardware = { floor = rgb(150, 152, 156), floorMat = M.Concrete, wall = rgb(236, 236, 232), products = { rgb(250, 140, 20), rgb(60, 60, 64), rgb(200, 40, 40), rgb(40, 110, 200), rgb(220, 200, 60), rgb(150, 110, 70) }, shelf = rgb(70, 74, 80), aisles = { "OUTILS", "PEINTURE", "JARDIN", "VISSERIE", "BOIS", "PLOMBERIE" } },
+	cinema = { floor = rgb(70, 30, 40), floorMat = M.Fabric, wall = rgb(60, 40, 70), products = { rgb(240, 200, 60), rgb(230, 50, 120), rgb(60, 140, 230) }, shelf = rgb(40, 30, 50), cinema = true },
+	mall = { floor = rgb(226, 222, 214), floorMat = M.Marble, wall = rgb(244, 240, 234), products = { rgb(230, 70, 90), rgb(60, 130, 230), rgb(250, 190, 40), rgb(80, 170, 110), rgb(170, 90, 200), rgb(240, 240, 236) }, shelf = rgb(236, 236, 232), mall = true },
 	restaurant = { floor = rgb(150, 104, 70), floorMat = M.WoodPlanks, wall = rgb(238, 222, 196), products = { rgb(220, 120, 40), rgb(200, 60, 40), rgb(80, 150, 70) }, shelf = rgb(120, 84, 58), restaurant = true },
 	toys = { floor = rgb(214, 206, 192), floorMat = M.SmoothPlastic, wall = rgb(246, 240, 226), products = { rgb(230, 70, 60), rgb(60, 130, 230), rgb(250, 200, 40), rgb(70, 180, 90), rgb(240, 130, 200) }, shelf = rgb(236, 236, 232), balls = true, aisles = { "PELUCHES", "JEUX", "BALLONS", "VOITURES" } },
 	phones = { floor = rgb(196, 198, 200), floorMat = M.SmoothPlastic, wall = rgb(238, 240, 242), products = { rgb(30, 32, 36), rgb(210, 212, 216), rgb(60, 70, 90), rgb(130, 80, 200) }, shelf = rgb(250, 250, 250), tables = true },
 	bikes = { floor = rgb(120, 122, 126), floorMat = M.Concrete, wall = rgb(232, 230, 224), products = { rgb(200, 50, 50), rgb(40, 90, 160), rgb(30, 30, 34), rgb(240, 180, 40) }, shelf = rgb(70, 72, 78), racks = true },
 	boxes = { floor = rgb(150, 120, 90), floorMat = M.WoodPlanks, wall = rgb(236, 226, 206), products = { rgb(196, 150, 96), rgb(176, 130, 80), rgb(214, 176, 120) }, shelf = rgb(150, 112, 76), productMat = M.Cardboard, aisles = { "CARTONS", "ADHÉSIFS", "EMBALLAGE" } },
 	laundry = { floor = rgb(226, 230, 232), floorMat = M.CeramicTiles, wall = rgb(214, 236, 240), products = { rgb(240, 240, 240) }, shelf = rgb(240, 240, 240), laundry = true },
-	grocery = { floor = rgb(220, 218, 212), floorMat = M.CeramicTiles, wall = rgb(244, 242, 236), products = { rgb(220, 60, 50), rgb(250, 200, 40), rgb(70, 160, 80), rgb(240, 130, 40), rgb(60, 110, 200), rgb(240, 240, 236) }, shelf = rgb(236, 236, 232), fridges = true, aisles = { "ÉPICERIE", "BOISSONS", "FRAIS", "SNACKS" } },
+	grocery = { floor = rgb(220, 218, 212), floorMat = M.CeramicTiles, wall = rgb(244, 242, 236), products = { rgb(220, 60, 50), rgb(250, 200, 40), rgb(70, 160, 80), rgb(240, 130, 40), rgb(60, 110, 200), rgb(240, 240, 236) }, shelf = rgb(236, 236, 232), fridges = true, aisles = { "ÉPICERIE", "BOISSONS", "SNACKS", "PETIT-DÉJ", "CONSERVES", "HYGIÈNE", "PÂTES", "BÉBÉ" } },
 }
 
 local function P(h, parent, lcf, size, col, mat, collide, extra)
@@ -137,12 +140,223 @@ local function glassDoor(h, parent, u, c, w, ht, hinge, label)
 	return d
 end
 
--- spec : { W, D, floors, theme, wall, wallMat, accent, name }
+
+-- caisse de supermarché : tapis le long de Z, caissier côté +X
+local function checkout(h, parent, cx, z1, len, accent)
+	P(h, parent, CFrame.new(cx, 1.7, z1 + len / 2), V(1.8, 3.4, len), rgb(236, 236, 232), M.SmoothPlastic, true)
+	P(h, parent, CFrame.new(cx, 3.45, z1 + len / 2 - 0.6), V(1.5, 0.1, len - 2), rgb(40, 40, 44), M.Rubber, false)
+	P(h, parent, CFrame.new(cx + 0.3, 3.9, z1 + len - 0.9), V(1.1, 0.8, 1.2), rgb(40, 42, 46), M.SmoothPlastic, false)
+	P(h, parent, CFrame.new(cx, 6.2, z1 + len - 0.9), V(0.15, 4, 0.15), rgb(90, 90, 96), M.Metal, false)
+	local n = P(h, parent, CFrame.new(cx, 8.4, z1 + len - 0.9), V(0.25, 0.9, 1.2), accent, M.SmoothPlastic, false)
+	return n
+end
+
+-- grand rayonnage industriel (bricolage) le long de Z
+local function rack(h, parent, cx, z1, z2, th, rng)
+	local len, cz = z2 - z1, (z1 + z2) / 2
+	local ORANGE = rgb(240, 120, 20)
+	for z = z1, z2 + 0.01, math.max(4, len / math.max(1, math.floor(len / 6))) do
+		for _, s in { -1, 1 } do
+			P(h, parent, CFrame.new(cx + s * 1.5, 5, z), V(0.3, 10, 0.3), rgb(40, 80, 160), M.Metal, true)
+		end
+	end
+	for _, y in { 0.6, 3.6, 6.6, 9.6 } do
+		for _, s in { -1, 1 } do
+			P(h, parent, CFrame.new(cx + s * 1.5, y, cz), V(0.3, 0.4, len), ORANGE, M.Metal, false)
+		end
+		P(h, parent, CFrame.new(cx, y + 0.25, cz), V(3, 0.1, len), rgb(150, 120, 90), M.WoodPlanks, false)
+		if y < 9 then
+			local z = z1 + 0.3
+			while z < z2 - 1 do
+				local w = math.min(rng:NextNumber(1.2, 2.6), z2 - z - 0.3)
+				local ht = rng:NextNumber(1, 2.4)
+				P(h, parent, CFrame.new(cx, y + 0.3 + ht / 2, z + w / 2), V(2.6, ht, w - 0.15), rng:NextNumber() < 0.5 and rgb(196, 150, 96) or th.products[rng:NextInteger(1, #th.products)], rng:NextNumber() < 0.5 and M.Cardboard or M.SmoothPlastic, false)
+				z += w
+			end
+		end
+	end
+	P(h, parent, CFrame.new(cx, 1.6, cz), V(2.7, 2, len), rgb(80, 80, 84), M.Metal, true)
+end
+
+-- intérieur des grandes surfaces (supermarché, bricolage, cinéma, centre commercial)
+function K.bigInterior(c)
+	local h, furn, inter, doors, th, spec, rng = c.h, c.furn, c.inter, c.doors, c.th, c.spec, c.rng
+	local W, D, xa, xb, za, zb, GH, dx, DW, accent = c.W, c.D, c.xa, c.xb, c.za, c.zb, c.GH, c.dx, c.DW, c.accent
+	local F = L.F
+	local xin = W / 2 - K.EXT
+	-- éclairage en grille
+	local nl = 0
+	for z = 6, D - 4, 9 do
+		for x = -W / 2 + 8, W / 2 - 8, 14 do
+			nl += 1
+			ceilingLight(h, furn, x, GH - 0.2, z, (nl % 2 == 1))
+		end
+	end
+	if th.mall then
+		-- galerie intérieure : boutiques ouvertes (sans porte) de part et d'autre d'une allée centrale
+		local BD = math.min(14, (D - 2 * K.EXT) / 2 - 6) -- profondeur d'une boutique
+		local bw = 16
+		local cols = th.products
+		local names = { "MODE INVERSE", "CHAUSSURES GAUCHES", "LIBRAIRIE DU RETOUR", "PARFUMS PERDUS", "SPORT EN ARRIÈRE", "BIJOUX TORDUS", "MUSIQUE À L'ENVERS", "GOURMANDISES" }
+		local k = 0
+		for x = xa + 1, xb - bw - 0.5, bw do
+			if math.abs(x + bw / 2 - dx) > DW / 2 + bw / 2 + 2 then
+				-- rangée du fond seulement (le côté façade garde les vitrines vers l'extérieur)
+				k += 1
+				local z0 = zb - BD
+				local col = cols[(k - 1) % #cols + 1]
+				-- cloisons latérales
+				box(h, inter, x, 0.36, z0, x + 0.4, GH - 0.2, zb, th.wall, M.Plaster, true)
+				box(h, inter, x + bw - 0.4, 0.36, z0, x + bw, GH - 0.2, zb, th.wall, M.Plaster, true)
+				-- imposte avec enseigne au-dessus de l'ouverture
+				local sg = box(h, inter, x + 0.4, 9.4, z0 - 0.3, x + bw - 0.4, GH - 0.2, z0, col, M.SmoothPlastic, true)
+				local lb = ax(h, inter, "x", x + bw / 2, 10.6, z0 - 0.4, bw - 2, 1.6, 0.1, col:Lerp(Color3.new(0, 0, 0), 0.2), M.SmoothPlastic, false)
+				Lib.label(lb, Enum.NormalId.Front, names[(k - 1) % #names + 1], WHITE, nil, Enum.Font.FredokaOne, true)
+				-- rayonnages au fond et présentoir central
+				for _, y in { 1.2, 3.2, 5.2 } do
+					P(h, furn, CFrame.new(x + bw / 2, y, zb - 0.9), V(bw - 2, 0.15, 1.2), rgb(236, 232, 226), M.Wood, false)
+					products(h, furn, x + bw / 2, y + 0.08, zb - 0.9, bw - 2.4, 0.9, true, { products = { col, col:Lerp(WHITE, 0.4), rgb(60, 60, 64) } }, rng)
+				end
+				P(h, furn, CFrame.new(x + bw / 2, 1.5, z0 + BD / 2 - 1), V(4, 2.4, 2.4), rgb(236, 232, 226), M.Wood, true)
+				products(h, furn, x + bw / 2, 2.7, z0 + BD / 2 - 1, 3.6, 2, true, { products = { col, col:Lerp(WHITE, 0.4) } }, rng)
+				-- comptoir
+				P(h, furn, CFrame.new(x + bw - 2.4, 1.8, z0 + 2.2), V(2.6, 3.4, 1.4), col, M.SmoothPlastic, true)
+			end
+		end
+		-- atrium central : fontaine, bancs, plantes
+		local az = (za + zb - BD) / 2 + 2
+		Lib.cylDeco(furn, h.cf * CFrame.new(0, 1, az) * CFrame.Angles(0, 0, math.pi / 2), 1.3, 12, rgb(214, 210, 202), M.Marble)
+		local water = Lib.cylDeco(furn, h.cf * CFrame.new(0, 1.55, az) * CFrame.Angles(0, 0, math.pi / 2), 0.2, 11, rgb(90, 160, 210), M.Glass)
+		water.Transparency = 0.3
+		Lib.cylDeco(furn, h.cf * CFrame.new(0, 3, az) * CFrame.Angles(0, 0, math.pi / 2), 3, 1.6, rgb(214, 210, 202), M.Marble)
+		for _, sx in { -1, 1 } do
+			for _, off in { 14, 30, 46 } do
+				local bx = sx * off
+				if math.abs(bx) < xin - 6 then
+					P(h, furn, CFrame.new(bx, 1.2, az), V(6, 0.4, 2), rgb(120, 84, 58), M.Wood, true)
+					P(h, furn, CFrame.new(bx, 0.75, az), V(5.4, 0.8, 1.4), rgb(80, 80, 84), M.Metal, false)
+					F.plant(furn, h.cf * CFrame.new(bx + 5, 0.36, az))
+				end
+			end
+		end
+		return
+	end
+	-- cloison de réserve au fond
+	local RZ = th.cinema and math.floor(D * 0.42) or (D - 12)
+	local rdx = th.cinema and 0 or (xb - 5)
+	local backName = th.cinema and "Salle 1" or "Réserve"
+	wall(h, inter, "x", xa, xb, RZ, 0.5, 0.36, GH - 0.56, { { rdx - 2.5, rdx + 2.5, 0, 7.5 } }, th.wall, M.Plaster)
+	L.door(h, doors, "x", rdx - 1.25, RZ, 0.36, 2.5, 7.5, 1, -1, th.cinema and rgb(120, 30, 40) or WHITE, backName, false)
+	L.door(h, doors, "x", rdx + 1.25, RZ, 0.36, 2.5, 7.5, 1, 1, th.cinema and rgb(120, 30, 40) or WHITE, backName, false)
+	local sign = ax(h, inter, "x", rdx, 8.6, RZ - 0.3, 4, 1, 0.08, th.cinema and accent or rgb(40, 120, 60), M.SmoothPlastic, true)
+	Lib.label(sign, Enum.NormalId.Front, string.upper(backName), WHITE, nil, Enum.Font.GothamBold, true)
+	if th.cinema then
+		-- hall : comptoir confiserie parallèle à la façade, affiches, salle de projection au fond
+		local cz = RZ - 6
+		P(h, furn, CFrame.new(-W / 4, 1.9, cz), V(W * 0.3, 3.6, 2.6), accent, M.SmoothPlastic, true)
+		P(h, furn, CFrame.new(-W / 4, 3.8, cz), V(W * 0.3 + 0.3, 0.2, 2.9), rgb(30, 30, 34), M.SmoothPlastic, false)
+		for k = -1, 1 do
+			P(h, furn, CFrame.new(-W / 4 + k * 5, 5, cz + 0.2), V(2.2, 2.2, 1.8), rgb(250, 240, 200), M.Glass, false, { Transparency = 0.3 })
+			P(h, furn, CFrame.new(-W / 4 + k * 5, 4.5, cz + 0.2), V(2, 1, 1.6), rgb(250, 220, 120), M.SmoothPlastic, false)
+		end
+		local mb = ax(h, inter, "x", -W / 4, 8.6, RZ - 0.3, W * 0.28, 2.4, 0.1, rgb(20, 20, 24), M.SmoothPlastic, false)
+		Lib.label(mb, Enum.NormalId.Front, "POP-CORN  BOISSONS  BONBONS", rgb(255, 210, 60), nil, Enum.Font.FredokaOne, true)
+		for _, s in { -1, 1 } do
+			for z = 6, RZ - 4, 7 do
+				F.painting(furn, h.cf * CFrame.new(s * (xin - 0.15), 5.8, z) * CFrame.Angles(0, s > 0 and -math.pi / 2 or math.pi / 2, 0), 3.4, 5, th.products[rng:NextInteger(1, #th.products)])
+			end
+		end
+		for x = W / 8, W / 2 - 8, 9 do
+			P(h, furn, CFrame.new(x, 1.2, RZ / 2), V(6, 0.4, 2), rgb(120, 30, 40), M.Fabric, true)
+			P(h, furn, CFrame.new(x, 0.75, RZ / 2), V(5.4, 0.8, 1.4), rgb(30, 30, 34), M.Metal, false)
+		end
+		-- salle : écran, gradins, fauteuils
+		local SZ = zb - 0.4
+		local scr = ax(h, inter, "x", 0, 6.6, SZ - 0.2, W * 0.7, 8.4, 0.1, rgb(250, 250, 250), M.Neon, false)
+		scr.Transparency = 0.25
+		local rows = math.floor((zb - 10 - (RZ + 6)) / 3.2)
+		for r = 0, rows - 1 do
+			local z = RZ + 6 + r * 3.2
+			local step = math.max(0, (rows - 1 - r)) * 0.6
+			if step > 0 then
+				box(h, inter, xa + 4, 0.36, z - 1.6, xb - 4, 0.36 + step, z + 1.6, th.floor, M.Fabric, true)
+			end
+			for x = xa + 6, xb - 6, 2.4 do
+				if math.abs(x) > 2.4 then
+					P(h, furn, CFrame.new(x, 0.36 + step + 0.9, z), V(2.1, 1.2, 1.8), rgb(170, 30, 40), M.Fabric, true)
+					P(h, furn, CFrame.new(x, 0.36 + step + 2.2, z - 0.8), V(2.1, 2, 0.4), rgb(150, 26, 36), M.Fabric, true)
+				end
+			end
+		end
+		return
+	end
+	-- réserve : étagères métalliques et palettes
+	for x = xa + 4, xb - 12, 8 do
+		F.shelf(furn, h.cf * CFrame.new(x, 0.36, zb - 0.9))
+	end
+	for k = 0, 2 do
+		local px = xa + 6 + k * 7
+		P(h, furn, CFrame.new(px, 0.6, RZ + 4), V(4, 0.5, 4), rgb(170, 130, 86), M.WoodPlanks, true)
+		P(h, furn, CFrame.new(px, 2.1, RZ + 4), V(3.6, 2.6, 3.6), rgb(196, 150, 96), M.Cardboard, true)
+	end
+	-- caisses alignées près de l'entrée (côté opposé à la porte), allées de 3 studs
+	local cs = dx >= 0 and -1 or 1
+	local x1 = dx + cs * (DW / 2 + 5)
+	local x2 = cs * (xin - 6)
+	local lanes = 0
+	for x = math.min(x1, x2), math.max(x1, x2), 5.5 do
+		checkout(h, furn, x, 5, 7, accent)
+		lanes += 1
+	end
+	-- caddies près de la porte
+	for k = 0, 3 do
+		local cx = dx - cs * (DW / 2 + 3)
+		P(h, furn, CFrame.new(cx, 1.6, 4 + k * 1.1), V(2, 1.8, 2.6), rgb(200, 205, 210), M.DiamondPlate, true, { Transparency = 0.15 })
+	end
+	-- rayonnages muraux et zone de rayons
+	wallShelf(h, furn, xin, 1, 16, RZ - 1, th, rng)
+	wallShelf(h, furn, -xin, -1, 16, RZ - 1, th, rng)
+	local gz1, gz2 = 17, RZ - (th.fridges and 7 or 4.5)
+	local lo, hi = -(xin - 1.6 - 4.5), xin - 1.6 - 4.5
+	local pitch = th.aisles == K.THEMES.hardware.aisles and (3 + 5) or (3.2 + 4.5)
+	local ng = math.max(1, math.floor((hi - lo + 4.5) / pitch))
+	for i = 0, ng - 1 do
+		local x = ng == 1 and 0 or (lo + 1.6 + i * (hi - lo - 3.2) / (ng - 1))
+		if spec.theme == "hardware" then
+			rack(h, furn, x, gz1, gz2, th, rng)
+		else
+			gondola(h, furn, x, gz1, gz2, th, rng)
+		end
+		if th.aisles then
+			local b = P(h, furn, CFrame.new(x, 10.4, gz1 - 0.5), V(4.6, 1.2, 0.12), accent, M.SmoothPlastic, false)
+			Lib.label(b, Enum.NormalId.Front, th.aisles[(i % #th.aisles) + 1], WHITE, nil, Enum.Font.FredokaOne, true)
+			Lib.label(b, Enum.NormalId.Back, th.aisles[(i % #th.aisles) + 1], WHITE, nil, Enum.Font.FredokaOne, true)
+			P(h, furn, CFrame.new(x, 11.5, gz1 - 0.5), V(0.06, 1.4, 0.06), rgb(90, 90, 96), M.Metal, false)
+		end
+	end
+	-- vitrines réfrigérées le long de la cloison de réserve
+	if th.fridges then
+		for x = xa + 3, rdx - 6, 4.2 do
+			P(h, furn, CFrame.new(x + 2, 3.9, RZ - 1.8), V(4, 7.6, 2.8), rgb(230, 232, 236), M.SmoothPlastic, true)
+			P(h, furn, CFrame.new(x + 2, 4.1, RZ - 3.25), V(3.6, 6.6, 0.1), rgb(190, 225, 240), M.Glass, false, { Transparency = 0.35 })
+			for _, y in { 1.6, 3.4, 5.2 } do
+				products(h, furn, x + 2, y, RZ - 2.2, 3.4, 1.4, true, th, rng)
+			end
+			P(h, furn, CFrame.new(x + 2, 7.5, RZ - 3.2), V(3.6, 0.15, 0.1), rgb(220, 240, 255), M.Neon, false)
+		end
+	end
+	return lanes
+end
+
+-- spec : { W, D, floors, theme, wall, wallMat, accent, name, big, H, bigSign }
 function K.build(parent, cf, spec, rng)
 	local W, D, floors = spec.W, spec.D, spec.floors or 0
 	local th = K.THEMES[spec.theme] or K.THEMES.toys
 	local EXT, GH = K.EXT, K.GH
-	local H = GH + floors * K.FH
+	local H = spec.H or (GH + floors * K.FH)
+	if spec.H then
+		floors = 0
+	end
 	local wcol, wmat = spec.wall or rgb(236, 230, 218), spec.wallMat or M.Brick
 	local accent = spec.accent or rgb(60, 130, 230)
 	local model = Instance.new("Model")
@@ -222,9 +436,19 @@ function K.build(parent, cf, spec, rng)
 	box(h, inter, dx - 3.5, 0.36, za, dx + 3.5, 0.4, za + 4, rgb(60, 56, 54), M.Fabric, true)
 	box(h, shell, dx - 4, 0, -2.2, dx + 4, 0.3, 0, rgb(170, 166, 160), M.Concrete, false)
 	-- bandeau d'enseigne et auvent
-	local sg = ax(h, shell, "x", 0, 11.4, -0.35, W * 0.74, 1.8, 0.3, accent, M.SmoothPlastic, true)
-	Lib.label(sg, Enum.NormalId.Front, spec.label or "MAGASIN", WHITE, nil, Enum.Font.FredokaOne, true)
-	local awn = Lib.part(shell, h.cf * CFrame.new(0, 9.75, -1.6) * CFrame.Angles(0, math.pi, 0), V(W - 1.5, 1.2, 3.2), accent, M.Fabric, { Class = "WedgePart", Name = "Awning", CanCollide = false, CanQuery = false, CanTouch = false })
+	if spec.H and spec.H > GH + 3 then
+		-- grande surface : façade pleine au-dessus du rez-de-chaussée, grand fronton avec enseigne
+		box(h, shell, xa, GH, za, xb, GH + 0.8, zb, CEIL, M.SmoothPlastic, false, { Name = "Slab" })
+		ax(h, shell, "x", 0, H - 4, -0.8, W + 1, 8, 1.2, accent, M.SmoothPlastic, true, { Name = "Fascia" })
+		local big = ax(h, shell, "x", 0, H - 4, -1.5, math.min(W * 0.6, 70), 6.5, 0.2, accent:Lerp(Color3.new(0, 0, 0), 0.15), M.SmoothPlastic, true)
+		Lib.label(big, Enum.NormalId.Front, spec.label or "MAGASIN", WHITE, nil, Enum.Font.FredokaOne, true)
+		ax(h, shell, "x", 0, GH + 0.6, -0.4, W - 1, 0.5, 0.6, rgb(214, 210, 202), M.Concrete, true)
+	else
+		local sg = ax(h, shell, "x", 0, 11.4, -0.35, W * 0.74, 1.8, 0.3, accent, M.SmoothPlastic, true)
+		Lib.label(sg, Enum.NormalId.Front, spec.label or "MAGASIN", WHITE, nil, Enum.Font.FredokaOne, true)
+	end
+	local awW = spec.big and (DW + 10) or (W - 1.5)
+	local awn = Lib.part(shell, h.cf * CFrame.new(spec.big and dx or 0, 9.75, -1.6) * CFrame.Angles(0, math.pi, 0), V(awW, 1.2, 3.2), accent, M.Fabric, { Class = "WedgePart", Name = "Awning", CanCollide = false, CanQuery = false, CanTouch = false })
 	-- pilastres d'angle et corniche
 	for _, s in { -1, 1 } do
 		box(h, shell, s * W / 2 - 0.6, 0, -0.3, s * W / 2 + 0.6, H, 0.6, wcol:Lerp(Color3.new(0, 0, 0), 0.12), wmat, true)
@@ -255,7 +479,9 @@ function K.build(parent, cf, spec, rng)
 	for z = 6, D - 4, 8 do
 		for _, x in { -W / 4, W / 4 } do
 			nl += 1
-			ceilingLight(h, furn, x, GH - 0.2, z, (nl % 2 == 1))
+			if not spec.big then
+				ceilingLight(h, furn, x, GH - 0.2, z, (nl % 2 == 1))
+			end
 		end
 	end
 	-- toit : climatiseurs
@@ -263,6 +489,9 @@ function K.build(parent, cf, spec, rng)
 		box(h, shell, -4 + (k - 1) * 8, H + 1, D / 2 - 2, -1 + (k - 1) * 8, H + 3.4, D / 2 + 2, rgb(190, 194, 200), M.Metal, true)
 	end
 
+	if spec.big then
+		K.bigInterior({ h = h, furn = furn, inter = inter, doors = doors, th = th, spec = spec, rng = rng, W = W, D = D, xa = xa, xb = xb, za = za, zb = zb, GH = GH, dx = dx, DW = DW, accent = accent })
+	else
 	---------------------------------------------------------------- réserve au fond
 	local RZ = D - 9
 	local rdx = xb - 4
@@ -458,6 +687,7 @@ function K.build(parent, cf, spec, rng)
 	-- plante près de l'entrée
 	L.F.plant(furn, h.cf * CFrame.new(dx - cs * (DW / 2 + 1.6), 0.36, za + 4.2))
 
+	end
 	model.PrimaryPart = found
 	model:SetAttribute("ShopTheme", spec.theme or "")
 	model.Parent = parent
