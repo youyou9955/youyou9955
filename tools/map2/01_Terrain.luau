@@ -64,7 +64,7 @@ return function()
 					end
 					for k = 1, ny do
 						local y0 = YB + (k - 1) * RES
-						local o = math.clamp((h - y0) / RES, 0, 1)
+						local o = math.clamp((h - y0) / RES - 0.5, 0, 1) -- surface lisse à y = h
 						local m
 						if o > 0 then
 							if y0 + RES < h - 8 then
