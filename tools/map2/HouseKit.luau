@@ -92,23 +92,59 @@ local function wall(h, parent, axis, a, b, c, t, yb, ht, holes, col, mat)
 			box(h, parent, c - t / 2, yb + v1, u1, c + t / 2, yb + v2, u2, col, mat, false, { Name = "Wall" })
 		end
 	end
-	local hs = {}
+	-- découpe en colonnes aux bords des baies ; dans chaque colonne, remplit entre les baies superposées
+	local hs, cuts = {}, { a, b }
 	for _, o in holes or {} do
 		if o[2] > a and o[1] < b then
-			table.insert(hs, { math.max(a, o[1]), math.min(b, o[2]), math.max(0, o[3]), math.min(ht, o[4]) })
+			local hh = { math.max(a, o[1]), math.min(b, o[2]), math.max(0, o[3]), math.min(ht, o[4]) }
+			table.insert(hs, hh)
+			table.insert(cuts, hh[1])
+			table.insert(cuts, hh[2])
 		end
 	end
-	table.sort(hs, function(p, q)
-		return p[1] < q[1]
-	end)
-	local cur = a
-	for _, o in hs do
-		seg(cur, o[1], 0, ht)
-		seg(math.max(cur, o[1]), o[2], 0, o[3])
-		seg(math.max(cur, o[1]), o[2], o[4], ht)
-		cur = math.max(cur, o[2])
+	table.sort(cuts)
+	local cols = {}
+	for i = 1, #cuts - 1 do
+		local u1, u2 = cuts[i], cuts[i + 1]
+		if u2 - u1 >= 0.04 then
+			local mid = (u1 + u2) / 2
+			local inside = {}
+			for _, o in hs do
+				if mid > o[1] and mid < o[2] then
+					table.insert(inside, o)
+				end
+			end
+			table.sort(inside, function(p, q)
+				return p[3] < q[3]
+			end)
+			local spans, v = {}, 0
+			for _, o in inside do
+				if o[3] > v then
+					table.insert(spans, { v, o[3] })
+				end
+				v = math.max(v, o[4])
+			end
+			if v < ht then
+				table.insert(spans, { v, ht })
+			end
+			local sig = ""
+			for _, sp in spans do
+				sig ..= ("%.3f-%.3f;"):format(sp[1], sp[2])
+			end
+			-- fusionne les colonnes voisines identiques (moins de pièces)
+			local last = cols[#cols]
+			if last and last.sig == sig and math.abs(last.u2 - u1) < 0.001 then
+				last.u2 = u2
+			else
+				table.insert(cols, { u1 = u1, u2 = u2, spans = spans, sig = sig })
+			end
+		end
 	end
-	seg(cur, b, 0, ht)
+	for _, c in cols do
+		for _, sp in c.spans do
+			seg(c.u1, c.u2, sp[1], sp[2])
+		end
+	end
 end
 
 local function weld(a, b)
@@ -986,25 +1022,36 @@ function K.build(parent, cf, spec, rng)
 		L = { "z", OUT, D - OUT, W / 2, 1 },
 		R = { "z", OUT, D - OUT, -W / 2, -1 },
 	}
-	for f = 0, nF - 1 do
-		local col = (f >= 1 and pal.upper) or pal.wall
-		local mat = (f >= 1 and pal.upperMat) or pal.mat
-		for key, wd in walls do
-			local axis, a, b, edge, o = wd[1], wd[2], wd[3], wd[4], wd[5]
-			local cOut = edge - o * OUT / 2
-			local cIn = edge - o * (OUT + (EXT - OUT) / 2)
-			local wcol, wmat = col, mat
-			-- façade moderne : un volume d'accent (côté porte / étage)
-			if pal.modern and pal.accent and ((f == 1 and key == "front") or (nF == 1 and key == "L")) then
-				wcol, wmat = pal.accent, pal.accentMat
+	-- murs extérieurs : un parement par niveau (matière propre à chaque niveau), doublage intérieur d'un seul
+	-- tenant sur toute la hauteur (pas de joint visible au droit de la trémie d'escalier)
+	for key, wd in walls do
+		local axis, a, b, edge, o = wd[1], wd[2], wd[3], wd[4], wd[5]
+		local cOut = edge - o * OUT / 2
+		local cIn = edge - o * (OUT + (EXT - OUT) / 2)
+		local allHoles = {}
+		for f = 0, nF - 1 do
+			for _, hl in ext[f][key] do
+				table.insert(allHoles, { hl[1], hl[2], hl[3] + f * FH, hl[4] + f * FH })
 			end
-			wall(h, h.shell, axis, a, b, cOut, OUT, fy(f), FH, ext[f][key], wcol, wmat)
-			local ia, ib = a, b
-			if axis == "x" then
-				ia, ib = -W / 2 + EXT, W / 2 - EXT
-			end
-			wall(h, h.inter, axis, ia, ib, cIn, EXT - OUT, fy(f), FH, ext[f][key], pal.inside, M.Plaster)
 		end
+		local sameMat = not pal.upper and not (pal.modern and pal.accent)
+		if sameMat then
+			wall(h, h.shell, axis, a, b, cOut, OUT, fy(0), nF * FH, allHoles, pal.wall, pal.mat)
+		else
+			for f = 0, nF - 1 do
+				local wcol = (f >= 1 and pal.upper) or pal.wall
+				local wmat = (f >= 1 and pal.upperMat) or pal.mat
+				if pal.modern and pal.accent and ((f == 1 and key == "front") or (nF == 1 and key == "L")) then
+					wcol, wmat = pal.accent, pal.accentMat
+				end
+				wall(h, h.shell, axis, a, b, cOut, OUT, fy(f), FH, ext[f][key], wcol, wmat)
+			end
+		end
+		local ia, ib = a, b
+		if axis == "x" then
+			ia, ib = -W / 2 + EXT, W / 2 - EXT
+		end
+		wall(h, h.inter, axis, ia, ib, cIn, EXT - OUT, fy(0), nF * FH, allHoles, pal.inside, M.Plaster)
 	end
 	for _, wn in wins do
 		local wd = walls[wn[2]]
