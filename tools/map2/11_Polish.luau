@@ -47,7 +47,12 @@ return function()
 	-- toit du parking à étages : voitures garées
 	local nc = 0
 	local pk = Lib.path("Downtown"):FindFirstChild("ParkingEtage", true)
-	local deck = pk and pk:FindFirstChild("Deck")
+	local deck
+	for _, d in pk and pk:GetDescendants() or {} do
+		if d.Name == "Deck" and d:IsA("BasePart") and (not deck or d.Position.Y > deck.Position.Y) then
+			deck = d
+		end
+	end
 	if deck and not pk:GetAttribute("RoofCars") then
 		pk:SetAttribute("RoofCars", true)
 		local top = deck.CFrame * CFrame.new(0, deck.Size.Y / 2, 0)
