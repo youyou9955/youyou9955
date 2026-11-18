@@ -40,7 +40,41 @@ local function swap(old, name, mode)
 	return m
 end
 
+-- Éclairage naturel : ambiance moins plate, ombres nettes, couleurs moins saturées
+local function lighting()
+	local L = game:GetService("Lighting")
+	L.Ambient = Color3.fromRGB(78, 80, 88)
+	L.OutdoorAmbient = Color3.fromRGB(118, 122, 132)
+	L.Brightness = 3.2
+	L.EnvironmentDiffuseScale = 1
+	L.EnvironmentSpecularScale = 1
+	L.ShadowSoftness = 0.12
+	L.ClockTime = 15.3
+	L.GeographicLatitude = 45
+	L.ExposureCompensation = 0.1
+	local cc = L:FindFirstChildOfClass("ColorCorrectionEffect")
+	if cc then
+		cc.Saturation, cc.Contrast, cc.Brightness = -0.06, 0.1, 0
+		cc.TintColor = Color3.fromRGB(255, 249, 240)
+	end
+	local bl = L:FindFirstChildOfClass("BloomEffect")
+	if bl then
+		bl.Intensity, bl.Size, bl.Threshold = 0.25, 24, 1.9
+	end
+	local a = L:FindFirstChildOfClass("Atmosphere")
+	if a then
+		a.Density, a.Offset, a.Glare, a.Haze = 0.32, 0.08, 0.2, 1.6
+		a.Color = Color3.fromRGB(199, 210, 222)
+		a.Decay = Color3.fromRGB(106, 118, 136)
+	end
+	local T = workspace.Terrain
+	T.Decoration = false -- l'herbe animée traverse les routes (pièces posées sur le terrain)
+	T:SetMaterialColor(Enum.Material.Grass, Color3.fromRGB(88, 112, 62))
+	T:SetMaterialColor(Enum.Material.LeafyGrass, Color3.fromRGB(80, 104, 58))
+end
+
 return function()
+	lighting()
 	local map = workspace.Map
 	local rng = Random.new(4242)
 	local st = { tree = 0, pine = 0, palm = 0, bush = 0, tower = 0, shop = 0 }
