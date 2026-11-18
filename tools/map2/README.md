@@ -27,6 +27,8 @@ require(game.ServerStorage.MapLoader:Clone())("<sha>", { "00_Setup", "01_Terrain
 | 13_Houses | reconstruit le quartier résidentiel avec HouseKit : 8 types (classique, à étage, coloniale, ranch, ferme, villa, moderne, petite), sans meubles ni voitures ; sauvegarde l'ancien quartier dans ServerStorage.Backups |
 | 14_MeshyTrees | remplace tous les arbres de la carte par les 4 arbres Meshy AI (chêne, érable, bouleau, sapin) de ReplicatedStorage.Assets.City ; Lib.tree les utilise aussi pour les nouveaux arbres |
 | 15_MeshyCars | remplace les voitures décoratives (ParkedCar, ParkedVan, ToyCar) par 5 voitures Meshy AI (berline, SUV, citadine, pick-up, monospace) de ReplicatedStorage.Assets.City ; Lib.meshyCar les pose aussi dans les allées des maisons (étape 13) ; les camions sont conservés |
+| 16_HillHouses | remplace les maisons des collines (08) par des maisons HouseKit sur socles en pierre : plain-pied sur les pentes, à étage sur le plateau |
+| 17_Fonts | applique les polices du jeu à tous les textes : Montserrat ExtraBold (enseignes, titres, lettres WRONG WAY) et Roboto Condensed Bold (panneaux routiers) ; Lib.label les utilise aussi |
 
 Coordonnées : X ouest → est, Z nord → sud, sol à y = 0, dessus de chaussée 0,2, trottoirs 0,8.
 Aucun script de gameplay n'est créé : la map est uniquement du décor ancré.
