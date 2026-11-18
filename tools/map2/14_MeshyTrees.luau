@@ -14,6 +14,7 @@ local ROUND, PINE = meshOf("TreeL"), meshOf("PineL")
 local ROUNDS = { "MeshyOak", "MeshyMaple", "MeshyBirch" }
 assert(city:FindFirstChild("MeshyPine") and city:FindFirstChild("MeshyOak"), "arbres Meshy absents de Assets.City")
 
+return function()
 local list = {}
 for _, d in workspace:GetDescendants() do
 	if d:IsA("MeshPart") and d.Name == "Tree" and (d.MeshId == ROUND or d.MeshId == PINE) then
@@ -60,4 +61,5 @@ for i, t in list do
 		task.wait()
 	end
 end
-print(("[14] arbres Meshy : %d remplacés (%d sapins, %d feuillus)"):format(n, np, n - np))
+return ("arbres Meshy : %d remplacés (%d sapins, %d feuillus)"):format(n, np, n - np)
+end
