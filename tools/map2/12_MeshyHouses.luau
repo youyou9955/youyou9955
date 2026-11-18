@@ -257,10 +257,14 @@ local function buildLot(dirs, lotCf, lw, ld, name, tag, extraSetback)
 		Lib.driveway(garden, lotCf * CFrame.new(gx, 0, -sw) * CFrame.Angles(0, math.pi, 0), dw, sw)
 		if rng:NextNumber() < 0.7 then
 			local ccf = lotCf * CFrame.new(gx, 0.3, setback - 7.5) * CFrame.Angles(0, rng:NextNumber() < 0.5 and 0 or math.pi, 0)
+			local car
 			if rng:NextNumber() < 0.5 then
-				Lib.toyCar(Lib.path("DecorativeVehicles"), ccf)
+				car = Lib.toyCar(Lib.path("DecorativeVehicles"), ccf)
 			else
-				Lib.vehicle("Car", Lib.path("DecorativeVehicles"), ccf)
+				car = Lib.vehicle("Car", Lib.path("DecorativeVehicles"), ccf)
+			end
+			if car then
+				car:SetAttribute("Lot", tag)
 			end
 		end
 		bins(garden, lotCf * CFrame.new(gx + (gx >= hx and 1 or -1) * (dw / 2 + 2), 0, setback - 2) * CFrame.Angles(0, math.pi, 0))
@@ -430,6 +434,11 @@ local function hitsRoad(p)
 	return #workspace:GetPartBoundsInBox(p.CFrame, p.Size * 0.92, roadOv) > 0
 end
 local function clearLot(dirs, tag)
+	for _, v in Lib.path("DecorativeVehicles"):GetChildren() do
+		if v:GetAttribute("Lot") == tag then
+			v:Destroy()
+		end
+	end
 	for _, f in { dirs.gardens, dirs.fences, dirs.mailboxes } do
 		local m = f:FindFirstChild(tag)
 		if m then
