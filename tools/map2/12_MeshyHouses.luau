@@ -354,7 +354,7 @@ local function buildLot(dirs, lotCf, lw, ld, name, tag, extraSetback)
 
 	-- haies de séparation latérales (une sur deux) et haie du fond
 	if rng:NextNumber() < 0.6 then
-		Lib.hedge(fence, (lotCf * CFrame.new(R, 0, 3)).Position, (lotCf * CFrame.new(R, 0, ld - 2)).Position, 3.2, 1.6)
+		Lib.hedge(fence, (lotCf * CFrame.new(R - 0.8, 0, 3)).Position, (lotCf * CFrame.new(R - 0.8, 0, ld - 2)).Position, 3.2, 1.6)
 	end
 	if rng:NextNumber() < 0.35 then
 		Lib.fence(fence, (lotCf * CFrame.new(L + 0.4, 0, ld - 1)).Position, (lotCf * CFrame.new(R - 0.4, 0, ld - 1)).Position, "picket", 3.4)
