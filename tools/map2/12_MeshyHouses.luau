@@ -314,8 +314,8 @@ local function buildLot(dirs, lotCf, lw, ld, name, tag, extraSetback)
 	local fence = Lib.model(dirs.fences, tag)
 	local fcol = pick({ C.white, C.white, rgb(250, 236, 200), rgb(200, 226, 240) })
 	for _, s in segs do
-		local a = (lotCf * CFrame.new(s[1], 0, 0.8)).Position
-		local b = (lotCf * CFrame.new(s[2], 0, 0.8)).Position
+		local a = (lotCf * CFrame.new(s[1], 0, 1.3)).Position
+		local b = (lotCf * CFrame.new(s[2], 0, 1.3)).Position
 		if ftype == "picket" then
 			local f = Lib.fence(fence, a, b, "picket", 3)
 			for _, p in f:GetDescendants() do
@@ -343,13 +343,13 @@ local function buildLot(dirs, lotCf, lw, ld, name, tag, extraSetback)
 		end
 	end
 	if ftype == "villa" then
-		gatePillars(fence, lotCf * CFrame.new(doorX, 0, 0.8), 3.4, rgb(214, 200, 176), M.Sandstone, 5)
+		gatePillars(fence, lotCf * CFrame.new(doorX, 0, 1.4), 3.4, rgb(214, 200, 176), M.Sandstone, 5)
 		gardenLamp(garden, lotCf * CFrame.new(doorX - 4.5, 0, 2.4), false)
 		gardenLamp(garden, lotCf * CFrame.new(doorX + 4.5, 0, 2.4), false)
 	elseif ftype == "picket" or ftype == "wood" then
-		gatePillars(fence, lotCf * CFrame.new(doorX, 0, 0.8), 2.4, fcol, M.SmoothPlastic, 3.6)
+		gatePillars(fence, lotCf * CFrame.new(doorX, 0, 1.4), 2.4, fcol, M.SmoothPlastic, 3.6)
 	elseif ftype == "hedge" or ftype == "lowwall" then
-		gatePillars(fence, lotCf * CFrame.new(doorX, 0, 0.8), 2.4, rgb(196, 150, 120), M.Brick, 3.4)
+		gatePillars(fence, lotCf * CFrame.new(doorX, 0, 1.4), 2.4, rgb(196, 150, 120), M.Brick, 3.4)
 	end
 
 	-- haies de séparation latérales (une sur deux) et haie du fond
