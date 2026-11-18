@@ -161,8 +161,14 @@ return function()
 					local hit = workspace:Raycast(V(x, 400, z), V(0, -800, 0), tp)
 					local y = hit and hit.Position.Y or 0
 					local cf = CFrame.lookAt(V(x, y + 10, z), V(x + 10, y + 12, z))
-					if #workspace:GetPartBoundsInBox(cf, V(20, 22, 6), ov) > 0 then
-						ok = false
+					for _, p in workspace:GetPartBoundsInBox(cf, V(20, 22, 6), ov) do
+						local soft = p:IsDescendantOf(Lib.path("Vegetation")) or (p.Parent and p.Parent.Name == "Rock")
+						if not soft then
+							ok = false
+							break
+						end
+					end
+					if not ok then
 						break
 					end
 					table.insert(cfs, { cf, ch })
@@ -170,9 +176,15 @@ return function()
 			end
 			if ok then
 				for _, e in cfs do
+					-- dégage arbres et rochers derrière la lettre
+					for _, p in workspace:GetPartBoundsInBox(e[1], V(20, 22, 6), ov) do
+						local m = p:FindFirstAncestorWhichIsA("Model")
+						if m and (p:IsDescendantOf(Lib.path("Vegetation")) or m.Name == "Rock") then
+							m:Destroy()
+						end
+					end
 					local lp = Lib.part(view, e[1], V(18, 22, 1.6), Lib.C.white, M.SmoothPlastic, { Name = "Letter" })
 					Lib.label(lp, Enum.NormalId.Front, e[2], Lib.rgb(230, 50, 50), nil, Enum.Font.FredokaOne, false, 12)
-					Lib.part(view, e[1] * CFrame.new(0, -12, 1.5), V(1, 8, 1), Lib.rgb(90, 90, 96), M.Metal, { Name = "LetterPost" })
 					nl += 1
 				end
 				break
