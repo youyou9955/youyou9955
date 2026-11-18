@@ -46,19 +46,12 @@ local TOWERS = { "OfficeL1", "OfficeL2", "OfficeL3" }
 local function towers(map)
 	local n = 0
 	for _, d in map:GetDescendants() do
-		if d:IsA("MeshPart") and d.Name == "MeshyTower" and not d:GetAttribute("Light") then
+		if d:IsA("MeshPart") and d.Name == "MeshyTower" then
 			local s = d.Size
 			local want = s.Y / math.max(s.X, s.Z)
-			-- le modèle dont la proportion est la plus proche : moins d'étirement des fenêtres
-			local best, bestErr
-			for i, name in TOWERS do
-				local b = city[name].Size
-				local ratio = b.Y / math.max(b.X, b.Z)
-				local err = math.abs(math.log(want / ratio)) + ((n + i) % 3 == 0 and 0.08 or 0)
-				if not bestErr or err < bestErr then
-					best, bestErr = name, err
-				end
-			end
+			-- modèle selon la proportion : moins d'étirement des fenêtres
+			-- (L1 tour de verre ~1.8, L2 brique ~0.85, L3 pierre ~0.6)
+			local best = want >= 1.5 and "OfficeL1" or (want >= 0.75 and "OfficeL2" or "OfficeL3")
 			place(best, d.Parent, ground(d), s, true, "MeshyTower")
 			d:Destroy()
 			n += 1

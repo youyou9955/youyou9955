@@ -26,10 +26,17 @@ local function setup(door: Instance)
 	prompt.HoldDuration = 0
 	prompt.Parent = door
 
+	-- maisons Meshy : un cache sombre masque la porte peinte du modèle quand la porte est ouverte
+	local shadeRef = door:FindFirstChild("Shade")
+	local shade = shadeRef and shadeRef:IsA("ObjectValue") and shadeRef.Value
+
 	prompt.Triggered:Connect(function()
 		isOpen = not isOpen
 		prompt.ActionText = isOpen and "Fermer" or "Ouvrir"
 		TweenService:Create(door, INFO, { CFrame = isOpen and opened or closed }):Play()
+		if shade and shade:IsA("BasePart") then
+			shade.Transparency = isOpen and 0 or 1
+		end
 	end)
 end
 
