@@ -194,14 +194,14 @@ return function()
 			if ok then
 				for _, e in cfs do
 					-- dégage arbres et rochers derrière la lettre
-					for _, p in workspace:GetPartBoundsInBox(e[1], V(20, 22, 6), ov) do
+					for _, p in workspace:GetPartBoundsInBox(e[1] * CFrame.new(0, 0, -6), V(24, 26, 18), ov) do
 						local m = p:FindFirstAncestorWhichIsA("Model")
 						if m and m ~= workspace and m.Parent ~= workspace and (p:IsDescendantOf(Lib.path("Vegetation")) or m.Name == "Rock") then
 							m:Destroy()
 						end
 					end
 					local lp = Lib.part(view, e[1], V(18, 22, 1.6), Lib.C.white, M.SmoothPlastic, { Name = "Letter" })
-					Lib.label(lp, Enum.NormalId.Front, e[2], Lib.rgb(230, 50, 50), nil, Enum.Font.FredokaOne, false, 12)
+					Lib.label(lp, Enum.NormalId.Front, e[2], Lib.rgb(230, 50, 50), nil, Enum.Font.FredokaOne, false, 4)
 					nl += 1
 				end
 			end
