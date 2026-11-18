@@ -90,7 +90,7 @@ return function()
 	T:SetMaterialColor(M.LeafyGrass, rgb(92, 160, 62))
 	T:SetMaterialColor(M.Sand, rgb(236, 214, 158))
 	T:SetMaterialColor(M.Rock, rgb(150, 140, 128))
-	T:SetMaterialColor(M.Ground, rgb(128, 98, 70))
+	T:SetMaterialColor(M.Ground, rgb(132, 140, 78))
 	T:SetMaterialColor(M.Snow, rgb(245, 248, 252))
 	T:SetMaterialColor(M.Asphalt, rgb(70, 72, 80))
 	return "setup ok"

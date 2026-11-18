@@ -133,5 +133,51 @@ return function()
 			end
 		end
 	end
-	return ("finitions : %d vitrages recolorés sur %d tours, %d voitures sur le parking, %d groupes industriels"):format(n, #towers, nc, ni)
+	-- grandes lettres WRONG WAY : plus grandes, plus haut sur le flanc est des collines, face à la ville
+	local view = Lib.path("Landmarks"):FindFirstChild("Belvedere")
+	local nl = 0
+	if view and not view:GetAttribute("BigLetters") then
+		view:SetAttribute("BigLetters", true)
+		for _, p in view:GetChildren() do
+			if p.Name == "Letter" then
+				p:Destroy()
+			end
+		end
+		local hill = require(script.Parent.Plan).hill
+		local tp = RaycastParams.new()
+		tp.FilterType = Enum.RaycastFilterType.Include
+		tp.FilterDescendantsInstances = { workspace.Terrain }
+		local ov = OverlapParams.new()
+		ov.FilterType = Enum.RaycastFilterType.Exclude
+		ov.FilterDescendantsInstances = { workspace.Terrain }
+		local text = "WRONG WAY"
+		for _, r in { 165, 150, 180, 195, 135 } do
+			local cfs, ok = {}, true
+			for k = 1, #text do
+				local ch = text:sub(k, k)
+				if ch ~= " " then
+					local z = hill.c.Z + (k - 5) * 22
+					local x = hill.c.X + math.sqrt(math.max(r * r - (z - hill.c.Z) ^ 2, 0))
+					local hit = workspace:Raycast(V(x, 400, z), V(0, -800, 0), tp)
+					local y = hit and hit.Position.Y or 0
+					local cf = CFrame.lookAt(V(x, y + 10, z), V(x + 10, y + 12, z))
+					if #workspace:GetPartBoundsInBox(cf, V(20, 22, 6), ov) > 0 then
+						ok = false
+						break
+					end
+					table.insert(cfs, { cf, ch })
+				end
+			end
+			if ok then
+				for _, e in cfs do
+					local lp = Lib.part(view, e[1], V(18, 22, 1.6), Lib.C.white, M.SmoothPlastic, { Name = "Letter" })
+					Lib.label(lp, Enum.NormalId.Front, e[2], Lib.rgb(230, 50, 50), nil, Enum.Font.FredokaOne, false, 12)
+					Lib.part(view, e[1] * CFrame.new(0, -12, 1.5), V(1, 8, 1), Lib.rgb(90, 90, 96), M.Metal, { Name = "LetterPost" })
+					nl += 1
+				end
+				break
+			end
+		end
+	end
+	return ("finitions : %d vitrages recolorés sur %d tours, %d voitures sur le parking, %d groupes industriels, %d lettres"):format(n, #towers, nc, ni, nl)
 end
