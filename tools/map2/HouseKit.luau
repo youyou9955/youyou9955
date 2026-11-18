@@ -1509,6 +1509,9 @@ end
 CS:GetInstanceAddedSignal("WWD_Door"):Connect(setup)
 ]]
 
+-- outils internes partagés avec les autres kits (magasins, restaurants…)
+K.lib = { mk = mk, box = box, ax = ax, wall = wall, door = hingedDoor, garageDoor = garageDoor, window = window, props = props, weld = weld, prompt = prompt, F = F }
+
 function K.installScript()
 	local sss = game:GetService("ServerScriptService")
 	local s = sss:FindFirstChild("HouseDoors")
