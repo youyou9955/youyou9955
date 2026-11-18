@@ -108,8 +108,13 @@ local function barn(parent, cf)
 		Lib.part(m, cf * CFrame.new(s * (w / 4 - 1.5), h + 12.2, 0) * CFrame.Angles(0, 0, s * math.rad(-22)), V(w / 2 + 1, 1, d + 2), rgb(70, 70, 76), M.SmoothPlastic)
 	end
 	for _, sz in { -1, 1 } do
-		Lib.part(m, cf * CFrame.new(0, h + 5, sz * (d / 2 - 0.3)), V(w - 6, 10, 0.6), red, M.WoodPlanks)
-		Lib.part(m, cf * CFrame.new(0, h + 11, sz * (d / 2 - 0.3)), V(w * 0.6, 6, 0.6), red, M.WoodPlanks)
+		Lib.part(m, cf * CFrame.new(0, h + 5, sz * (d / 2 - 0.3)), V(w - 12, 10, 0.6), red, M.WoodPlanks)
+		for _, s in { -1, 1 } do
+			Lib.wedge(m, cf * CFrame.new(s * (w / 2 - 3), h + 5, sz * (d / 2 - 0.3)) * CFrame.Angles(0, -s * math.pi / 2, 0), V(0.6, 10, 6), red, M.WoodPlanks)
+		end
+		for _, s in { -1, 1 } do
+			Lib.wedge(m, cf * CFrame.new(s * 9, h + 11.95, sz * (d / 2 - 0.3)) * CFrame.Angles(0, -s * math.pi / 2, 0), V(0.6, 7.3, 18), red, M.WoodPlanks)
+		end
 	end
 	local f = Build.face(cf, w, d, 1)
 	-- grande porte avec croix blanche
