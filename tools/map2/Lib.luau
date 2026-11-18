@@ -472,6 +472,53 @@ function Lib.driveway(parent, cf, width, depth)
 	return m
 end
 
+---------------------------------------------------------------- Voiture-jouet en pièces
+Lib.TOY = {
+	rgb(235, 64, 52), rgb(255, 196, 40), rgb(60, 140, 235), rgb(70, 190, 110), rgb(250, 130, 40),
+	rgb(170, 90, 220), rgb(250, 250, 250), rgb(50, 200, 210), rgb(255, 120, 170), rgb(40, 44, 52),
+}
+function Lib.toyCar(parent, cf, color)
+	local m = Lib.model(parent, "ToyCar")
+	color = color or Lib.TOY[Lib.rng:NextInteger(1, #Lib.TOY)]
+	local glass = rgb(150, 210, 240)
+	local van = Lib.rng:NextNumber() < 0.25
+	Lib.part(m, cf * CFrame.new(0, 1.9, 0), V(6.4, 2.2, 13), color, M.SmoothPlastic, { Name = "Body" })
+	if van then
+		Lib.part(m, cf * CFrame.new(0, 4.4, 0.8), V(6, 2.9, 10.4), color, M.SmoothPlastic, { Name = "Cabin" })
+		Lib.fine(m, cf * CFrame.new(0, 4.6, -4.45), V(5.2, 1.8, 0.1), glass, M.Glass)
+		for _, s in { -1, 1 } do
+			Lib.fine(m, cf * CFrame.new(s * 3.02, 4.6, 0.6), V(0.1, 1.6, 8.6), glass, M.Glass)
+		end
+	else
+		Lib.part(m, cf * CFrame.new(0, 4, 0.8), V(5.6, 2.2, 6.4), color:Lerp(C.white, 0.08), M.SmoothPlastic, { Name = "Cabin" })
+		Lib.fine(m, cf * CFrame.new(0, 4.05, -2.45), V(4.8, 1.6, 0.1), glass, M.Glass)
+		Lib.fine(m, cf * CFrame.new(0, 4.05, 4.05), V(4.8, 1.6, 0.1), glass, M.Glass)
+		for _, s in { -1, 1 } do
+			Lib.fine(m, cf * CFrame.new(s * 2.82, 4.05, 0.8), V(0.1, 1.5, 5.4), glass, M.Glass)
+		end
+	end
+	-- phares, feux, pare-chocs
+	for _, s in { -1, 1 } do
+		Lib.fine(m, cf * CFrame.new(s * 2.2, 2.2, -6.52), V(1.2, 0.7, 0.1), rgb(255, 250, 210), M.Neon)
+		Lib.fine(m, cf * CFrame.new(s * 2.4, 2.2, 6.52), V(1, 0.6, 0.1), rgb(220, 30, 30), M.Neon)
+	end
+	Lib.fine(m, cf * CFrame.new(0, 1, -6.6), V(6.6, 0.6, 0.4), rgb(70, 72, 78), M.SmoothPlastic)
+	Lib.fine(m, cf * CFrame.new(0, 1, 6.6), V(6.6, 0.6, 0.4), rgb(70, 72, 78), M.SmoothPlastic)
+	-- roues
+	for _, sx in { -1, 1 } do
+		for _, sz in { -1, 1 } do
+			Lib.cylDeco(m, cf * CFrame.new(sx * 3.05, 1.1, sz * 4) * CFrame.Angles(0, 0, math.pi / 2), 1, 2.2, rgb(36, 36, 40), M.SmoothPlastic)
+			Lib.cylDeco(m, cf * CFrame.new(sx * 3.58, 1.1, sz * 4) * CFrame.Angles(0, 0, math.pi / 2), 0.08, 1.1, rgb(210, 210, 216), M.Metal)
+		end
+	end
+	for _, d in m:GetDescendants() do
+		if d:IsA("BasePart") then
+			d.CanCollide = d.Name == "Body" or d.Name == "Cabin"
+		end
+	end
+	return m
+end
+
 ---------------------------------------------------------------- Terrain
 function Lib.fill(cf, size, material)
 	workspace.Terrain:FillBlock(cf, size, material)

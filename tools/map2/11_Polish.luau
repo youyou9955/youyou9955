@@ -28,6 +28,10 @@ return function()
 		end
 	end
 	for i, t in towers do
+		if t:GetAttribute("Recolored") then
+			continue
+		end
+		t:SetAttribute("Recolored", true)
 		local base = PALETTE[rng:NextInteger(1, #PALETTE)]
 		for _, p in t:GetDescendants() do
 			if isGlass(p) then
@@ -40,5 +44,26 @@ return function()
 			task.wait()
 		end
 	end
-	return ("finitions : %d vitrages recolorés sur %d tours"):format(n, #towers)
+	-- toit du parking à étages : voitures garées
+	local nc = 0
+	local pk = Lib.path("Downtown"):FindFirstChild("ParkingEtage", true)
+	local deck = pk and pk:FindFirstChild("Deck")
+	if deck and not pk:GetAttribute("RoofCars") then
+		pk:SetAttribute("RoofCars", true)
+		local top = deck.CFrame * CFrame.new(0, deck.Size.Y / 2, 0)
+		local ov = OverlapParams.new()
+		ov.FilterType = Enum.RaycastFilterType.Exclude
+		ov.FilterDescendantsInstances = { deck }
+		for _, row in { { -36, 0 }, { -22, math.pi }, { 22, 0 }, { 36, math.pi } } do
+			for x = -38, 38, 9.5 do
+				local cf = top * CFrame.new(x, 0, row[1]) * CFrame.Angles(0, row[2], 0)
+				Lib.mark(pk, top * CFrame.new(x + 4.75, 0.03, row[1]), Lib.V(0.35, 0.05, 13), Lib.C.white)
+				if rng:NextNumber() < 0.55 and #workspace:GetPartBoundsInBox(cf * CFrame.new(0, 3, 0), Lib.V(7, 5, 13), ov) == 0 then
+					Lib.toyCar(Lib.path("DecorativeVehicles"), cf)
+					nc += 1
+				end
+			end
+		end
+	end
+	return ("finitions : %d vitrages recolorés sur %d tours, %d voitures sur le parking"):format(n, #towers, nc)
 end
