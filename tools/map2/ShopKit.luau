@@ -19,8 +19,8 @@ local WHITE = rgb(242, 240, 234)
 -- thèmes : couleurs des produits et mobilier spécifique
 K.THEMES = {
 	hardware = { floor = rgb(150, 152, 156), floorMat = M.Concrete, wall = rgb(236, 236, 232), products = { rgb(250, 140, 20), rgb(60, 60, 64), rgb(200, 40, 40), rgb(40, 110, 200), rgb(220, 200, 60), rgb(150, 110, 70) }, shelf = rgb(70, 74, 80), aisles = { "OUTILS", "PEINTURE", "JARDIN", "VISSERIE", "BOIS", "PLOMBERIE" } },
-	cinema = { floor = rgb(70, 30, 40), floorMat = M.Fabric, wall = rgb(60, 40, 70), products = { rgb(240, 200, 60), rgb(230, 50, 120), rgb(60, 140, 230) }, shelf = rgb(40, 30, 50), cinema = true },
-	mall = { floor = rgb(226, 222, 214), floorMat = M.Marble, wall = rgb(244, 240, 234), products = { rgb(230, 70, 90), rgb(60, 130, 230), rgb(250, 190, 40), rgb(80, 170, 110), rgb(170, 90, 200), rgb(240, 240, 236) }, shelf = rgb(236, 236, 232), mall = true },
+	cinema = { floor = rgb(110, 36, 48), floorMat = M.Fabric, wall = rgb(150, 112, 168), products = { rgb(240, 200, 60), rgb(230, 50, 120), rgb(60, 140, 230) }, shelf = rgb(40, 30, 50), cinema = true },
+	mall = { floor = rgb(222, 214, 200), floorMat = M.SmoothPlastic, wall = rgb(244, 240, 234), products = { rgb(230, 70, 90), rgb(60, 130, 230), rgb(250, 190, 40), rgb(80, 170, 110), rgb(170, 90, 200), rgb(240, 240, 236) }, shelf = rgb(236, 236, 232), mall = true },
 	restaurant = { floor = rgb(150, 104, 70), floorMat = M.WoodPlanks, wall = rgb(238, 222, 196), products = { rgb(220, 120, 40), rgb(200, 60, 40), rgb(80, 150, 70) }, shelf = rgb(120, 84, 58), restaurant = true },
 	toys = { floor = rgb(214, 206, 192), floorMat = M.SmoothPlastic, wall = rgb(246, 240, 226), products = { rgb(230, 70, 60), rgb(60, 130, 230), rgb(250, 200, 40), rgb(70, 180, 90), rgb(240, 130, 200) }, shelf = rgb(236, 236, 232), balls = true, aisles = { "PELUCHES", "JEUX", "BALLONS", "VOITURES" } },
 	phones = { floor = rgb(196, 198, 200), floorMat = M.SmoothPlastic, wall = rgb(238, 240, 242), products = { rgb(30, 32, 36), rgb(210, 212, 216), rgb(60, 70, 90), rgb(130, 80, 200) }, shelf = rgb(250, 250, 250), tables = true },
@@ -225,10 +225,42 @@ function K.bigInterior(c)
 		end
 		-- atrium central : fontaine, bancs, plantes
 		local az = (za + zb - BD) / 2 + 2
-		Lib.cylDeco(furn, h.cf * CFrame.new(0, 1, az) * CFrame.Angles(0, 0, math.pi / 2), 1.3, 12, rgb(214, 210, 202), M.Marble)
-		local water = Lib.cylDeco(furn, h.cf * CFrame.new(0, 1.55, az) * CFrame.Angles(0, 0, math.pi / 2), 0.2, 11, rgb(90, 160, 210), M.Glass)
-		water.Transparency = 0.3
-		Lib.cylDeco(furn, h.cf * CFrame.new(0, 3, az) * CFrame.Angles(0, 0, math.pi / 2), 3, 1.6, rgb(214, 210, 202), M.Marble)
+		-- fontaine : bassin carré, eau, colonne
+		for _, sd in { -1, 1 } do
+			P(h, furn, CFrame.new(0, 1, az + sd * 5.6), V(12, 1.3, 0.8), rgb(214, 210, 202), M.Marble, true)
+			P(h, furn, CFrame.new(sd * 5.6, 1, az), V(0.8, 1.3, 10.4), rgb(214, 210, 202), M.Marble, true)
+		end
+		P(h, furn, CFrame.new(0, 1.2, az), V(10.4, 0.2, 10.4), rgb(90, 160, 210), M.Glass, false, { Transparency = 0.25 })
+		P(h, furn, CFrame.new(0, 2.6, az), V(1.6, 4.2, 1.6), rgb(214, 210, 202), M.Marble, true)
+		P(h, furn, CFrame.new(0, 4.9, az), V(4, 0.4, 4), rgb(214, 210, 202), M.Marble, false)
+		-- kiosques le long de l'allée centrale
+		local kn = { "CAFÉ", "GLACES", "CLÉS MINUTE", "JOURNAUX" }
+		local ki = 0
+		for _, kx in { -72, -56, 56, 72 } do
+			if math.abs(kx) < xin - 8 then
+				ki += 1
+				local col = th.products[ki % #th.products + 1]
+				P(h, furn, CFrame.new(kx, 1.8, az), V(5, 3.4, 4), col, M.SmoothPlastic, true)
+				P(h, furn, CFrame.new(kx, 3.6, az), V(5.4, 0.2, 4.4), rgb(240, 236, 228), M.Wood, false)
+				for _, ox in { -2.4, 2.4 } do
+					for _, oz in { -1.9, 1.9 } do
+						P(h, furn, CFrame.new(kx + ox, 5.6, az + oz), V(0.2, 4, 0.2), rgb(60, 60, 64), M.Metal, false)
+					end
+				end
+				local roof = P(h, furn, CFrame.new(kx, 7.8, az), V(6, 0.5, 5), col:Lerp(Color3.new(0, 0, 0), 0.2), M.SmoothPlastic, false)
+				local ks = P(h, furn, CFrame.new(kx, 8.6, az), V(5, 1.1, 0.15), col, M.SmoothPlastic, false)
+				Lib.label(ks, Enum.NormalId.Front, kn[ki], WHITE, nil, Enum.Font.FredokaOne, true)
+				Lib.label(ks, Enum.NormalId.Back, kn[ki], WHITE, nil, Enum.Font.FredokaOne, true)
+			end
+		end
+		-- jardinières près de la façade
+		for x = -xin + 10, xin - 10, 20 do
+			if math.abs(x - dx) > DW then
+				P(h, furn, CFrame.new(x, 1, za + 5), V(6, 1.4, 2.4), rgb(200, 196, 188), M.Concrete, true)
+				Lib.ball(furn, (h.cf * CFrame.new(x - 1.5, 2.4, za + 5)).Position, 2, rgb(74, 128, 66), M.Grass)
+				Lib.ball(furn, (h.cf * CFrame.new(x + 1.5, 2.4, za + 5)).Position, 2.2, rgb(84, 140, 70), M.Grass)
+			end
+		end
 		for _, sx in { -1, 1 } do
 			for _, off in { 14, 30, 46 } do
 				local bx = sx * off
