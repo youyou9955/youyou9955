@@ -277,6 +277,10 @@ local function window(h, parent, axis, u, c, outward, yb, w, v1, v2, pal, kind)
 	ax(h, parent, axis, u, yb + v1 - 0.15, c + outward * (K.EXT / 2 + 0.3), w + 0.9, 0.3, 0.7, fr, M.SmoothPlastic, true)
 	ax(h, parent, axis, u - w / 2 - 0.2, yc, fo, 0.4, hgt, 0.22, fr, M.SmoothPlastic, true)
 	ax(h, parent, axis, u + w / 2 + 0.2, yc, fo, 0.4, hgt, 0.22, fr, M.SmoothPlastic, true)
+	-- linteau en briques posées de chant au-dessus des fenêtres des façades en brique
+	if pal.mat == M.Brick and not (pal.upper and yb > K.Y0 + 1) then
+		ax(h, parent, axis, u, yb + v2 + 0.75, c + outward * (K.EXT / 2 + 0.05), w + 1.4, 0.7, 0.12, pal.wall:Lerp(Color3.new(0, 0, 0), 0.18), M.Brick, true)
+	end
 	-- petits bois (maisons classiques) ou montant central (modernes)
 	if not pal.modern then
 		ax(h, parent, axis, u, yc, c, 0.16, hgt, 0.3, fr, M.SmoothPlastic, true)
@@ -446,7 +450,13 @@ function F.kitchen(p, b, L, fridge, pal)
 	if cl < 2 then
 		return
 	end
-	fp(p, b, cm, 1.5, 0.05, cl, 3, 2.7, cab, M.WoodPlanks, true)
+	fp(p, b, cm, 1.5, 0.05, cl, 3, 2.7, cab, M.SmoothPlastic, true)
+	-- crédence carrelée et façades (joints de portes, tiroirs)
+	fp(p, b, cm, 4.3, 1.33, cl, 2.2, 0.06, rgb(226, 230, 232), M.CeramicTiles, false)
+	fp(p, b, cm, 2.55, -1.33, cl - 0.2, 0.05, 0.03, cab:Lerp(Color3.new(0, 0, 0), 0.25), M.SmoothPlastic, false)
+	for x = c1 + 2.4, c2 - 0.6, 2.4 do
+		fp(p, b, x, 1.25, -1.33, 0.06, 2.2, 0.03, cab:Lerp(Color3.new(0, 0, 0), 0.25), M.SmoothPlastic, false)
+	end
 	fp(p, b, cm, 3.1, -0.05, cl + 0.1, 0.2, 2.9, top, M.Granite, false)
 	fp(p, b, cm, 0.15, -1.32, cl, 0.3, 0.05, rgb(60, 60, 64), M.SmoothPlastic, false)
 	local sx, st = c1 + cl * 0.3, c1 + cl * 0.72
@@ -458,6 +468,14 @@ function F.kitchen(p, b, L, fridge, pal)
 	for x = c1 + 1.5, c2 - 1, 3 do
 		fp(p, b, x, 2.3, -1.38, 0.08, 1.2, 0.05, rgb(150, 150, 150), M.Metal, false)
 	end
+end
+function F.upper(p, b, L, pal)
+	local cab = pal.cabinet or rgb(232, 230, 224)
+	fp(p, b, 0, 7.1, 0.65, L, 2.6, 1.4, cab, M.SmoothPlastic, false)
+	for x = -L / 2 + 2.2, L / 2 - 0.4, 2.2 do
+		fp(p, b, x, 7.1, -0.07, 0.06, 2.4, 0.03, cab:Lerp(Color3.new(0, 0, 0), 0.25), M.SmoothPlastic, false)
+	end
+	fp(p, b, 0, 5.75, 0.65, L, 0.1, 1.4, rgb(255, 244, 220), M.Neon, false, { Transparency = 0.4 })
 end
 function F.bed(p, b, w, len, col)
 	fp(p, b, 0, 0.6, 0, w, 1.2, len, WOOD_L, M.Wood, true)
@@ -477,7 +495,7 @@ function F.nightstand(p, b)
 	fp(p, b, 0, 2.75, 0.1, 0.8, 1.1, 0.8, rgb(240, 230, 206), M.Fabric, false)
 end
 function F.wardrobe(p, b)
-	fp(p, b, 0, 3.75, 0, 5, 7.5, 2.4, WOOD_L, M.WoodPlanks, true)
+	fp(p, b, 0, 3.75, 0, 5, 7.5, 2.4, WOOD_L, M.Wood, true)
 	fp(p, b, 0, 3.8, -1.21, 0.08, 7.1, 0.03, WOOD_D, M.SmoothPlastic, false)
 	for _, s in { -1, 1 } do
 		fp(p, b, s * 0.45, 3.9, -1.25, 0.12, 1.4, 0.1, rgb(160, 160, 160), M.Metal, false)
@@ -491,7 +509,7 @@ function F.desk(p, b)
 	F.chair(p, b * CFrame.new(0, 0, -0.9) * CFrame.Angles(0, math.pi, 0), WOOD_D)
 end
 function F.dresser(p, b)
-	fp(p, b, 0, 1.6, 0, 4, 3.2, 1.8, WOOD_L, M.WoodPlanks, true)
+	fp(p, b, 0, 1.6, 0, 4, 3.2, 1.8, WOOD_L, M.Wood, true)
 	for y = 0.9, 2.5, 0.8 do
 		fp(p, b, 0, y, -0.91, 3.6, 0.06, 0.03, WOOD_D, M.SmoothPlastic, false)
 	end
@@ -732,6 +750,18 @@ local function furnish(h, room, rng, pal)
 								end
 							end
 							put(F.kitchen, rect, lcf, false, L, fridge, pal)
+							-- meubles hauts si aucune fenêtre au-dessus du plan de travail
+							local blocked = false
+							for _, k in room.win do
+								if ovl(rect, k) then
+									blocked = true
+								end
+							end
+							if not blocked then
+								local Lu = fridge and L - 3.4 or L
+								local off = fridge and -fridge * 1.7 or 0
+								F.upper(p, world(lcf * CFrame.new(off, 0, 0)), Lu, pal)
+							end
 							ok = true
 							break
 						end
@@ -1245,6 +1275,10 @@ function K.build(parent, cf, spec, rng)
 			box(h, h.inter, s[1], fy(0), s[3] + (i - 1) * K.RUN, s[2], fy(0) + i * K.RISE, s[3] + i * K.RUN, pal.floor, M.WoodPlanks, false, { Name = "Step" })
 			box(h, h.inter, s[1], fy(0) + i * K.RISE - 0.02, s[3] + (i - 1) * K.RUN - 0.06, s[2], fy(0) + i * K.RISE + 0.06, s[3] + (i - 1) * K.RUN + 0.2, pal.floor:Lerp(Color3.new(0, 0, 0), 0.2), M.Wood, true)
 		end
+		-- limon : panneau triangulaire qui habille le flanc de l'escalier côté pièce
+		local xs = gs > 0 and s[1] - 0.07 or s[2] + 0.07
+		local Ls = n * K.RUN
+		Lib.part(h.inter, h.cf * CFrame.new(xs, fy(0) + n * K.RISE / 2, s[3] + Ls / 2), V(0.12, n * K.RISE, Ls), pal.inside or WHITE, M.SmoothPlastic, { Class = "WedgePart", Name = "Stringer", CanCollide = false, CanQuery = false, CanTouch = false })
 		-- rampe côté pièce
 		local xe = gs > 0 and s[1] - 0.15 or s[2] + 0.15
 		local a = h.cf * CFrame.new(xe, fy(0) + 3.6, s[3])
