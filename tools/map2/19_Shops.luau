@@ -10,7 +10,7 @@ local rgb, M = Lib.rgb, Lib.M
 local rng = Random.new(1919)
 -- index (ordre ouest -> est) : thème, enseigne, couleurs
 local GALERIE = {
-	{ theme = "grocery", label = "TACOS TOUT DROIT", accent = rgb(220, 110, 30), wall = rgb(214, 196, 170), wallMat = M.Brick },
+	{ theme = "restaurant", label = "TACOS TOUT DROIT", accent = rgb(220, 110, 30), wall = rgb(214, 196, 170), wallMat = M.Brick },
 	{ theme = "toys", label = "JOUETS ET KLAXONS", accent = rgb(50, 120, 210), wall = rgb(236, 230, 216), wallMat = M.Plaster },
 	{ theme = "laundry", label = "LAVERIE LA ROUE LIBRE", accent = rgb(30, 150, 150), wall = rgb(150, 76, 60), wallMat = M.Brick },
 	{ theme = "bikes", label = "VÉLOS SANS ROUES", accent = rgb(200, 50, 50), wall = rgb(188, 192, 194), wallMat = M.Concrete },

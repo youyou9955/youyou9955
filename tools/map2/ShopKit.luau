@@ -18,6 +18,7 @@ local WHITE = rgb(242, 240, 234)
 
 -- thèmes : couleurs des produits et mobilier spécifique
 K.THEMES = {
+	restaurant = { floor = rgb(150, 104, 70), floorMat = M.WoodPlanks, wall = rgb(238, 222, 196), products = { rgb(220, 120, 40), rgb(200, 60, 40), rgb(80, 150, 70) }, shelf = rgb(120, 84, 58), restaurant = true },
 	toys = { floor = rgb(214, 206, 192), floorMat = M.SmoothPlastic, wall = rgb(246, 240, 226), products = { rgb(230, 70, 60), rgb(60, 130, 230), rgb(250, 200, 40), rgb(70, 180, 90), rgb(240, 130, 200) }, shelf = rgb(236, 236, 232), balls = true, aisles = { "PELUCHES", "JEUX", "BALLONS", "VOITURES" } },
 	phones = { floor = rgb(196, 198, 200), floorMat = M.SmoothPlastic, wall = rgb(238, 240, 242), products = { rgb(30, 32, 36), rgb(210, 212, 216), rgb(60, 70, 90), rgb(130, 80, 200) }, shelf = rgb(250, 250, 250), tables = true },
 	bikes = { floor = rgb(120, 122, 126), floorMat = M.Concrete, wall = rgb(232, 230, 224), products = { rgb(200, 50, 50), rgb(40, 90, 160), rgb(30, 30, 34), rgb(240, 180, 40) }, shelf = rgb(70, 72, 78), racks = true },
@@ -266,16 +267,59 @@ function K.build(parent, cf, spec, rng)
 	local RZ = D - 9
 	local rdx = xb - 4
 	wall(h, inter, "x", xa, xb, RZ, 0.5, 0.36, GH - 0.56, { { rdx - 2, rdx + 2, 0, 7.5 } }, th.wall, M.Plaster)
-	L.door(h, doors, "x", rdx, RZ, 0.36, 4, 7.5, 1, 1, WHITE, "Réserve", false)
-	local sign = ax(h, inter, "x", rdx, 8.5, RZ - 0.3, 3.2, 0.9, 0.08, rgb(40, 120, 60), M.SmoothPlastic, true)
-	Lib.label(sign, Enum.NormalId.Front, "RÉSERVE", WHITE, nil, Enum.Font.GothamBold)
+	local backName = th.restaurant and "Cuisine" or "Réserve"
+	L.door(h, doors, "x", rdx, RZ, 0.36, 4, 7.5, 1, 1, WHITE, backName, false)
+	local sign = ax(h, inter, "x", rdx, 8.5, RZ - 0.3, 3.2, 0.9, 0.08, th.restaurant and rgb(170, 50, 40) or rgb(40, 120, 60), M.SmoothPlastic, true)
+	Lib.label(sign, Enum.NormalId.Front, string.upper(backName == "Cuisine" and "CUISINE" or "RÉSERVE"), WHITE, nil, Enum.Font.GothamBold)
 	local F = L.F
-	F.shelf(furn, h.cf * CFrame.new(xa + 4, 0.36, zb - 0.9) * CFrame.Angles(0, 0, 0))
-	F.shelf(furn, h.cf * CFrame.new(xa + 11, 0.36, zb - 0.9))
-	-- palette de cartons
-	P(h, furn, CFrame.new(xa + 3, 0.6, RZ + 3), V(4, 0.5, 4), rgb(170, 130, 86), M.WoodPlanks, true)
-	for i = 0, 3 do
-		P(h, furn, CFrame.new(xa + 2.1 + (i % 2) * 1.8, 1.7 + math.floor(i / 2) * 1.6, RZ + 3), V(1.7, 1.5, 3.6), rgb(196, 150, 96), M.Cardboard, true)
+	if th.restaurant then
+		-- cuisine professionnelle : plans de travail inox le long du fond, fourneau + hotte, frigo, plonge, table de préparation
+		local STEEL, DARK = rgb(196, 200, 204), rgb(40, 40, 44)
+		local kz = zb - 1.4
+		P(h, furn, CFrame.new((xa + xb) / 2 - 2, 1.8, kz), V(xb - xa - 8, 3.5, 2.6), STEEL, M.Metal, true)
+		P(h, furn, CFrame.new((xa + xb) / 2 - 2, 3.6, kz), V(xb - xa - 8, 0.12, 2.7), rgb(214, 218, 222), M.DiamondPlate, false)
+		-- fourneau
+		local sx = xa + 6
+		P(h, furn, CFrame.new(sx, 1.8, kz), V(5, 3.6, 2.7), DARK, M.Metal, true)
+		for _, o in { { -1.2, -0.6 }, { 1.2, -0.6 }, { -1.2, 0.6 }, { 1.2, 0.6 } } do
+			P(h, furn, CFrame.new(sx + o[1], 3.63, kz + o[2]), V(1, 0.06, 1), rgb(70, 70, 74), M.Metal, false)
+		end
+		P(h, furn, CFrame.new(sx, 8.6, kz - 0.2), V(6, 1.6, 3.2), STEEL, M.Metal, false)
+		P(h, furn, CFrame.new(sx, 10.8, kz + 0.6), V(1.6, 2.8, 1.6), STEEL, M.Metal, false)
+		-- plonge
+		local px = (xa + xb) / 2 + 2
+		P(h, furn, CFrame.new(px, 3.5, kz), V(3, 0.2, 1.8), rgb(120, 126, 132), M.Metal, false)
+		P(h, furn, CFrame.new(px, 4.4, kz + 1), V(0.2, 1.6, 0.2), STEEL, M.Metal, false)
+		-- frigo double
+		P(h, furn, CFrame.new(xb - 2.4, 3.9, kz - 0.1), V(4, 7.8, 2.8), STEEL, M.Metal, true)
+		P(h, furn, CFrame.new(xb - 2.4, 3.9, kz - 1.53), V(0.06, 7.4, 0.06), DARK, M.Metal, false)
+		for _, o in { -0.5, 0.5 } do
+			P(h, furn, CFrame.new(xb - 2.4 + o, 4.3, kz - 1.62), V(0.12, 1.6, 0.12), DARK, M.Metal, false)
+		end
+		-- étagère murale et casseroles
+		P(h, furn, CFrame.new((xa + xb) / 2, 6.2, zb - 0.6), V(10, 0.15, 1.2), STEEL, M.Metal, false)
+		for k = -2, 2 do
+			Lib.cylDeco(furn, h.cf * CFrame.new((xa + xb) / 2 + k * 1.9, 6.75, zb - 0.6) * CFrame.Angles(0, 0, math.pi / 2), 0.5, 0.9, STEEL, M.Metal)
+		end
+		-- table de préparation centrale (passage de 3 studs autour)
+		local tz = (RZ + kz - 1.3) / 2
+		if kz - 1.3 - RZ > 5.5 then
+			P(h, furn, CFrame.new(xa + 7, 3.4, tz), V(5, 0.15, 2), STEEL, M.Metal, true)
+			P(h, furn, CFrame.new(xa + 7, 1.7, tz), V(4.6, 0.12, 1.6), STEEL, M.Metal, false)
+			for _, ox in { -2.2, 2.2 } do
+				for _, oz in { -0.8, 0.8 } do
+					P(h, furn, CFrame.new(xa + 7 + ox, 1.7, tz + oz), V(0.15, 3.3, 0.15), STEEL, M.Metal, false)
+				end
+			end
+		end
+	else
+		F.shelf(furn, h.cf * CFrame.new(xa + 4, 0.36, zb - 0.9) * CFrame.Angles(0, 0, 0))
+		F.shelf(furn, h.cf * CFrame.new(xa + 11, 0.36, zb - 0.9))
+		-- palette de cartons
+		P(h, furn, CFrame.new(xa + 3, 0.6, RZ + 3), V(4, 0.5, 4), rgb(170, 130, 86), M.WoodPlanks, true)
+		for i = 0, 3 do
+			P(h, furn, CFrame.new(xa + 2.1 + (i % 2) * 1.8, 1.7 + math.floor(i / 2) * 1.6, RZ + 3), V(1.7, 1.5, 3.6), rgb(196, 150, 96), M.Cardboard, true)
+		end
 	end
 	local rl = Instance.new("PointLight")
 	rl.Range, rl.Brightness, rl.Color, rl.Shadows = 14, 0.3, rgb(255, 246, 230), false
@@ -288,18 +332,58 @@ function K.build(parent, cf, spec, rng)
 	local cl = math.min(9, RZ - 9)
 	local ccx = cs * (xin - 1.6 - 2.6 - 1.3)
 	counter(h, furn, ccx, 4.5 + cl / 2, cl, accent, true)
-	wallShelf(h, furn, cs * xin, cs, 4, 4.5 + cl + 0.5, th, rng)
-	if RZ - 1 - (5.5 + cl) > 3 then
-		wallShelf(h, furn, cs * xin, cs, 5.5 + cl, RZ - 1, th, rng)
+	if th.restaurant then
+		-- tableau-menu derrière le comptoir, vitrine réfrigérée sur le comptoir
+		local mb = P(h, furn, CFrame.new(cs * (xin - 0.08), 7, 4.5 + cl / 2) * CFrame.Angles(0, cs > 0 and -math.pi / 2 or math.pi / 2, 0), V(cl - 1, 3.6, 0.12), rgb(32, 30, 30), M.Slate, false)
+		Lib.label(mb, Enum.NormalId.Front, "MENU\nTACO SENS UNIQUE  4€\nBURRITO DEMI-TOUR  6€\nNACHOS RAPPEL  3€", rgb(250, 230, 170), nil, Enum.Font.FredokaOne, true)
+		P(h, furn, CFrame.new(cs * (xin - 0.8), 1.8, 4.5 + cl / 2), V(1.6, 3.5, cl - 1), rgb(196, 200, 204), M.Metal, true)
+		P(h, furn, CFrame.new(ccx, 4.6, 4.5 + cl * 0.7), V(2.2, 1.5, cl * 0.35), rgb(190, 220, 230), M.Glass, false, { Transparency = 0.4 })
+		-- tableaux sur le mur opposé
+		local wx = -cs * (xin - 0.12)
+		for z = 6, RZ - 4, 6 do
+			F.painting(furn, h.cf * CFrame.new(wx, 6.4, z) * CFrame.Angles(0, -cs > 0 and -math.pi / 2 or math.pi / 2, 0), 3.2, 2.4, th.products[rng:NextInteger(1, #th.products)])
+		end
+	else
+		wallShelf(h, furn, cs * xin, cs, 4, 4.5 + cl + 0.5, th, rng)
+		if RZ - 1 - (5.5 + cl) > 3 then
+			wallShelf(h, furn, cs * xin, cs, 5.5 + cl, RZ - 1, th, rng)
+		end
+		-- rayonnage mural de l'autre côté
+		wallShelf(h, furn, -cs * xin, -cs, 4, RZ - 1, th, rng)
 	end
-	-- rayonnage mural de l'autre côté
-	wallShelf(h, furn, -cs * xin, -cs, 4, RZ - 1, th, rng)
 	-- zone centrale : gondoles avec allées d'au moins 4,5 studs
 	local zx1 = -cs > 0 and (xin - 1.6 - 4.5) or -(xin - 1.6 - 4.5) -- bord côté rayonnage mural opposé
 	local zx2 = ccx - cs * (1.3 + 4.5) -- bord côté comptoir
 	local lo, hi = math.min(zx1, zx2), math.max(zx1, zx2)
 	local gz1, gz2 = 7, RZ - 4.5
-	if th.laundry then
+	if th.restaurant then
+		-- salle : tables de 4 avec allées de 3 studs, suspensions au-dessus
+		local zxw = -cs * (xin - 0.3)
+		local x1, x2 = math.min(zxw, ccx - cs * (1.3 + 4)), math.max(zxw, ccx - cs * (1.3 + 4))
+		local cellX, cellZ = 6.5, 7 -- tables de 2 (chaises dos à dos entre rangées), allées de 3,5 studs entre colonnes
+		local nx = math.max(1, math.floor((x2 - x1) / cellX))
+		local nz = math.max(1, math.floor((RZ - 1.5 - 5.5) / cellZ))
+		for ix = 0, nx - 1 do
+			for iz = 0, nz - 1 do
+				local tx = x1 + (x2 - x1) * (ix + 0.5) / nx
+				local tz = 5.5 + (RZ - 1.5 - 5.5) * (iz + 0.5) / nz
+				local b = h.cf * CFrame.new(tx, 0.36, tz)
+				F.table(furn, b, 3, 3)
+				for _, k in { 0, 2 } do
+					local a = k * math.pi / 2
+					F.chair(furn, b * CFrame.Angles(0, a, 0) * CFrame.new(0, 0, -2.4) * CFrame.Angles(0, math.pi, 0), accent)
+				end
+				local lamp = P(h, furn, CFrame.new(tx, 9.4, tz), V(1.6, 0.8, 1.6), accent, M.SmoothPlastic, false)
+				P(h, furn, CFrame.new(tx, 9.0, tz), V(1.1, 0.06, 1.1), rgb(255, 236, 190), M.Neon, false)
+				P(h, furn, CFrame.new(tx, 11.0, tz), V(0.06, 2.6, 0.06), rgb(40, 40, 44), M.Metal, false)
+				if (ix + iz) % 2 == 0 then
+					local pl = Instance.new("PointLight")
+					pl.Range, pl.Brightness, pl.Color, pl.Shadows = 13, 0.35, rgb(255, 226, 180), false
+					pl.Parent = lamp
+				end
+			end
+		end
+	elseif th.laundry then
 		-- laverie : rangée double de machines au centre, bancs le long du mur
 		local cxm = (lo + hi) / 2
 		for z = gz1, gz2 - 3, 3.4 do
@@ -366,7 +450,7 @@ function K.build(parent, cf, spec, rng)
 			x2 = cs > 0 and math.min(x2, ccx - 1.3 - 1) or x2
 			x1 = cs < 0 and math.max(x1, ccx + 1.3 + 1) or x1
 		end
-		if x2 - x1 > 2.5 then
+		if x2 - x1 > 2.5 and not th.restaurant then
 			P(h, furn, CFrame.new((x1 + x2) / 2, 0.85, 2.1), V(x2 - x1, 1, 2.2), th.shelf:Lerp(Color3.new(0, 0, 0), 0.1), M.Wood, true)
 			products(h, furn, (x1 + x2) / 2, 1.35, 2.1, x2 - x1 - 0.4, 1.6, true, th, rng)
 		end
