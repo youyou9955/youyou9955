@@ -23,6 +23,9 @@ require(game.ServerStorage.MapLoader:Clone())("<sha>", { "00_Setup", "01_Terrain
 | 10_Nature | forêts et arbres hors ville, pins des collines, voitures-jouets dans les parkings |
 | 11_Polish | finitions (vitrages variés, toit du parking, cours industrielles, lettres WRONG WAY) |
 | 12_MeshyHouses | remplace les maisons du quartier résidentiel par 96 maisons Meshy AI (18 modèles importés dans ReplicatedStorage.Assets.Houses), avec jardins, clôtures, allées, boîtes aux lettres et arbres variés |
+| HouseKit | module (pas une étape) : maisons construites en pièces à l'échelle Roblox, intérieurs (pièces, escaliers, portes intérieures), portes à charnière avec invite Ouvrir/Fermer gérées par ServerScriptService.HouseDoors ; 16 palettes naturelles, toits à 2 pans, à croupes, pignon en façade ou plat |
+| 13_Houses | reconstruit le quartier résidentiel avec HouseKit : 8 types (classique, à étage, coloniale, ranch, ferme, villa, moderne, petite), sans meubles ni voitures ; sauvegarde l'ancien quartier dans ServerStorage.Backups |
+| 14_MeshyTrees | remplace tous les arbres de la carte par les 4 arbres Meshy AI (chêne, érable, bouleau, sapin) de ReplicatedStorage.Assets.City ; Lib.tree les utilise aussi pour les nouveaux arbres |
 
 Coordonnées : X ouest → est, Z nord → sud, sol à y = 0, dessus de chaussée 0,2, trottoirs 0,8.
 Aucun script de gameplay n'est créé : la map est uniquement du décor ancré.
