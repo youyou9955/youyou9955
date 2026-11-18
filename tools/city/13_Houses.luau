@@ -45,7 +45,8 @@ end
 
 ---------------------------------------------------------------- Meubles
 local function furn(parent, cf, name, lx, ly, lz, face, target, mode, collide)
-	local src = city:FindFirstChild(name)
+	-- série réaliste en priorité (passe 14)
+	local src = city:FindFirstChild(name .. "R") or city:FindFirstChild(name)
 	if not src then
 		return
 	end
@@ -87,6 +88,7 @@ local function build(parent, cf, w, d, floors, rng, opts)
 	local roofM = st.modern and M.Concrete or rf[1]
 	local gutC = pick(rng, GUTTERS)
 	local inC = pick(rng, WALLS_IN)
+	local curtainC = pick(rng, { rgb(236, 230, 214), rgb(214, 204, 186), rgb(180, 186, 192), rgb(150, 160, 140), rgb(200, 180, 170), rgb(245, 245, 240) })
 	local floorC = pick(rng, FLOORS)
 	local doorC = pick(rng, DOOR_COLORS)
 	local shutters = not st.modern and rng:NextNumber() < 0.45 and pick(rng, SHUTTERS)
@@ -168,6 +170,13 @@ local function build(parent, cf, w, d, floors, rng, opts)
 				D(at(o.c, o.t + 0.2, thick / 2 + 0.12), V(o.w + 0.6, 0.4, 0.25), trimC, M.SmoothPlastic, { Name = "Lintel" })
 				D(at(o.c, o.b - 0.15, thick / 2 + 0.25), V(o.w + 0.8, 0.3, 0.6), trimC, M.SmoothPlastic, { Name = "Sill" })
 				D(at(o.c, mid, 0.05), V(0.2, h, 0.15), trimC, M.SmoothPlastic, { Name = "Mullion" })
+				-- intérieur : rideaux de chaque côté + tablette, vus depuis la rue
+				local cw = math.min(1.1, o.w * 0.22)
+				for _, sd in { -1, 1 } do
+					D(at(o.c + sd * (o.w / 2 - cw / 2 + 0.25), mid + 0.2, -(thick / 2 + 0.18)), V(cw, h + 0.6, 0.12), curtainC, M.Fabric, { Name = "Curtain" })
+				end
+				D(at(o.c, o.t + 0.45, -(thick / 2 + 0.12)), V(o.w + 1, 0.12, 0.12), rgb(70, 70, 72), M.Metal, { Name = "CurtainRod" })
+				D(at(o.c, o.b - 0.05, -(thick / 2 + 0.2)), V(o.w + 0.4, 0.12, 0.4), rgb(240, 240, 236), M.SmoothPlastic, { Name = "InnerSill" })
 				if shutters then
 					for _, s in { -1, 1 } do
 						D(at(o.c + s * (o.w / 2 + 0.7), mid, thick / 2 + 0.1), V(1.2, h + 0.2, 0.15), shutters, M.WoodPlanks, { Name = "Shutter" })
