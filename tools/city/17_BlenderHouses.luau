@@ -214,7 +214,7 @@ return function(opts)
 	local mb = lot:FindFirstChild("Mailbox")
 	if mb then
 		local p = cf:PointToObjectSpace(mb:GetPivot().Position)
-		mb:PivotTo(cf * CFrame.new(dx - 3.5, p.Y, p.Z) * (cf.Rotation:Inverse() * mb:GetPivot().Rotation))
+		mb:PivotTo(cf * CFrame.new(dx - 6, p.Y, p.Z) * (cf.Rotation:Inverse() * mb:GetPivot().Rotation))
 	end
 	return ("maison Blender HouseA_%d style %d construite"):format(W, style)
 end
