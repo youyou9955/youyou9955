@@ -75,7 +75,7 @@ return function()
 		op.FilterDescendantsInstances = { Lib.path("Roads") }
 		local cut = 0
 		for _, g in workspace:GetPartBoundsInBox(cf * CFrame.new(hx, 1, pz0 - 2.5), V(5.5, 10, 9), op) do
-			if g.Size.Y >= 0.25 and math.min(g.Size.X, g.Size.Z) <= 2.3 and math.max(g.Size.X, g.Size.Z) > 3 then
+			if g.Size.Y >= 0.25 and math.min(g.Size.X, g.Size.Z) <= 2.3 and (math.max(g.Size.X, g.Size.Z) > 3 or (g.Size.Y > 1.5 and math.max(g.Size.X, g.Size.Z) < 1)) then -- glissière, mur, poteaux
 				g:Destroy()
 				cut += 1
 			end
