@@ -194,7 +194,7 @@ return function()
 			if ok then
 				for _, e in cfs do
 					-- dégage arbres et rochers derrière la lettre
-					for _, p in workspace:GetPartBoundsInBox(e[1] * CFrame.new(0, 0, -6), V(24, 26, 18), ov) do
+					for _, p in workspace:GetPartBoundsInBox(e[1] * CFrame.new(0, 0, -14), V(26, 30, 30), ov) do
 						local m = p:FindFirstAncestorWhichIsA("Model")
 						if m and m ~= workspace and m.Parent ~= workspace and (p:IsDescendantOf(Lib.path("Vegetation")) or m.Name == "Rock") then
 							m:Destroy()
