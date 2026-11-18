@@ -36,6 +36,14 @@ end
 return function()
 	local hq = Lib.path("DeliveryHeadquarters")
 	local main = hq:FindFirstChild("MainBuilding")
+	local bk0 = game:GetService("ServerStorage"):FindFirstChild("Backups")
+	if main and main:FindFirstChild("GroundFloor") and bk0 and bk0:FindFirstChild("HQ_MainBuilding") then
+		-- relance : repartir du bâtiment d'origine sauvegardé
+		main:Destroy()
+		main = bk0.HQ_MainBuilding:Clone()
+		main.Name = "MainBuilding"
+		main.Parent = hq
+	end
 	local body = main and main:FindFirstChild("Body")
 	if not body then
 		return "QG : déjà transformé (pas de Body)"
@@ -76,7 +84,7 @@ return function()
 					p.Size = V(p.Size.X, topY - newBottom, p.Size.Z)
 					p.CFrame = p.CFrame + V(0, (newBottom - bottom) / 2, 0)
 				end
-			elseif math.abs(lp.X) < 14 and lp.Z > -14.5 and lp.Z < -1.2 and lp.Y < 10.5 and p.Name ~= "Steps" then
+			elseif math.abs(lp.X) < 14 and lp.Z > -14.5 and lp.Z < -1.2 and lp.Y < 9 and p.Name ~= "Steps" then
 				p:Destroy() -- montants et porte peinte de l'ancien sas vitré
 			elseif inFoot and lp.Y < GH - 0.5 and p.Size.Y < GH and p.Name ~= "Plinth" and p.Name ~= "Steps" then
 				p:Destroy() -- fenêtres décoratives du rez-de-chaussée, portes peintes
