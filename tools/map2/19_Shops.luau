@@ -46,7 +46,15 @@ return function()
 	table.sort(shops, function(a, b)
 		return a.base.Position.X < b.base.Position.X
 	end)
+	-- workspace:SetAttribute("ShopsOnly", "2") limite le remplacement à certaines boutiques
 	local only = Lib.SHOPS_ONLY
+	local attr = workspace:GetAttribute("ShopsOnly")
+	if attr and attr ~= "" then
+		only = {}
+		for v in tostring(attr):gmatch("%d+") do
+			table.insert(only, tonumber(v))
+		end
+	end
 	local n = 0
 	for i, s in shops do
 		if not only or table.find(only, i) then
