@@ -291,8 +291,23 @@ local function window(h, parent, axis, u, c, outward, yb, w, v1, v2, pal, kind)
 	end
 end
 
+-- gouttière le long d'un égout (repère du toit : X le long de l'égout) + deux descentes jusqu'au sol
+function K.gutter(parent, base, L, y, zg, zw, xd, top, pal)
+	local col = pal.gutter or pal.trim
+	local d = props(true)
+	Lib.part(parent, base * CFrame.new(0, y, zg), V(L, 0.45, 0.5), col, M.Metal, d)
+	for _, sx in { -1, 1 } do
+		local x = sx * xd
+		local zc = (zg + zw) / 2
+		Lib.part(parent, base * CFrame.new(x, y - 0.35, zc), V(0.32, 0.32, math.abs(zg - zw) + 0.3), col, M.Metal, d)
+		local h = top + y - 0.5
+		Lib.part(parent, base * CFrame.new(x, y - 0.5 - h / 2, zw), V(0.36, h, 0.36), col, M.Metal, d)
+		Lib.part(parent, base * CFrame.new(x, y - 0.5 - h + 0.2, zw + (zw > 0 and 0.45 or -0.45)), V(0.36, 0.3, 0.9), col, M.Metal, d)
+	end
+end
+
 -- toit à deux pans. lc : repère local (X = faîtage) au centre de l'emprise, à la hauteur du haut des murs
-local function gableRoof(h, parent, lc, len, span, pitch, ohE, ohG, pal, wallCol, wallMat)
+local function gableRoof(h, parent, lc, len, span, pitch, ohE, ohG, pal, wallCol, wallMat, gutter)
 	local base = h.cf * lc
 	local rise = span / 2 * pitch
 	local t = 0.6
@@ -306,6 +321,9 @@ local function gableRoof(h, parent, lc, len, span, pitch, ohE, ohG, pal, wallCol
 		Lib.part(parent, base * pcf, V(len + 2 * ohG, t, L + 0.3), pal.roof, roofMat, { Name = "Roof" })
 		-- planche de rive le long de l'égout
 		Lib.part(parent, base * CFrame.lookAt(eave, ridge) * CFrame.new(0, -0.1, 0.15), V(len + 2 * ohG, 0.7, 0.3), pal.trim, M.SmoothPlastic, props(true))
+		if gutter then
+			K.gutter(parent, base, len + 2 * ohG, eave.Y - 0.25, s * (span / 2 + ohE + 0.3), s * (span / 2 + 0.3), len / 2 - 0.6, lc.Position.Y, pal)
+		end
 	end
 	Lib.part(parent, base * CFrame.new(0, rise + 0.4, 0), V(len + 2 * ohG + 0.1, 0.4, 1.1), pal.roof:Lerp(Color3.new(0, 0, 0), 0.2), roofMat, props(true))
 	for _, sx in { -1, 1 } do
@@ -324,7 +342,7 @@ end
 
 -- toit à quatre pans (croupes) : prisme central + 4 coins en CornerWedgePart (sommet au-dessus du coin +X/-Z)
 local CORNER_ANG = { ["1,-1"] = 0, ["-1,-1"] = math.pi / 2, ["-1,1"] = math.pi, ["1,1"] = -math.pi / 2 }
-local function hipRoof(h, parent, lc, len, span, pitch, oh, pal)
+local function hipRoof(h, parent, lc, len, span, pitch, oh, pal, gutter)
 	local base = h.cf * lc
 	local Lo, So = len + 2 * oh, span + 2 * oh
 	local run = So / 2
@@ -352,6 +370,11 @@ local function hipRoof(h, parent, lc, len, span, pitch, oh, pal)
 	Lib.part(parent, base * CFrame.new(0, y0 - 0.1, So / 2), V(Lo + 0.2, 0.6, 0.25), pal.trim, M.SmoothPlastic, props(true))
 	Lib.part(parent, base * CFrame.new(Lo / 2, y0 - 0.1, 0), V(0.25, 0.6, So), pal.trim, M.SmoothPlastic, props(true))
 	Lib.part(parent, base * CFrame.new(-Lo / 2, y0 - 0.1, 0), V(0.25, 0.6, So), pal.trim, M.SmoothPlastic, props(true))
+	if gutter then
+		for _, s in { -1, 1 } do
+			K.gutter(parent, base, Lo, y0 - 0.35, s * (So / 2 + 0.3), s * (span / 2 + 0.3), len / 2 - 0.6, lc.Position.Y, pal)
+		end
+	end
 	return rise + y0
 end
 
@@ -494,6 +517,32 @@ function F.shelf(p, b)
 	fp(p, b, -1.4, 4.4, -0.2, 2, 1.4, 1.2, rgb(196, 150, 96), M.Cardboard, false)
 	fp(p, b, 1.5, 1.6, -0.2, 2.2, 1.6, 1.2, rgb(196, 150, 96), M.Cardboard, false)
 end
+function F.painting(p, b, w, ht, col)
+	fp(p, b, 0, 0, 0, w + 0.4, ht + 0.4, 0.18, rgb(60, 46, 36), M.Wood, false)
+	fp(p, b, 0, 0, -0.05, w, ht, 0.12, rgb(246, 242, 232), M.SmoothPlastic, false)
+	fp(p, b, 0, -ht * 0.12, -0.12, w * 0.8, ht * 0.5, 0.04, col, M.SmoothPlastic, false)
+	fp(p, b, w * 0.18, ht * 0.2, -0.13, w * 0.25, w * 0.25, 0.04, col:Lerp(rgb(255, 230, 160), 0.6), M.SmoothPlastic, false)
+end
+function F.bookshelf(p, b)
+	fp(p, b, 0, 3.4, 0, 4.4, 6.8, 1.4, WOOD_D, M.Wood, true)
+	local cols = { rgb(150, 50, 44), rgb(46, 84, 130), rgb(196, 170, 96), rgb(60, 104, 70), rgb(220, 214, 200) }
+	for k, y in { 1.2, 2.9, 4.6 } do
+		fp(p, b, 0, y - 0.75, -0.25, 4, 0.12, 1, WOOD_L, M.Wood, false)
+		for i = 0, 4 do
+			fp(p, b, -1.6 + i * 0.8 + (k % 2) * 0.15, y + 0.05, -0.3, 0.6, 1.5 - (i % 3) * 0.2, 0.9, cols[(i + k) % #cols + 1], M.SmoothPlastic, false)
+		end
+	end
+end
+function F.sideboard(p, b)
+	fp(p, b, 0, 1.5, 0, 5, 3, 1.8, WOOD_D, M.Wood, true)
+	fp(p, b, 0, 3.05, 0, 5.1, 0.1, 1.9, WOOD_L, M.WoodPlanks, false)
+	fp(p, b, -1.4, 3.6, 0.1, 0.8, 1, 0.8, rgb(214, 206, 190), M.SmoothPlastic, false)
+	Lib.ball(p, (b * CFrame.new(-1.4, 4.4, 0.1)).Position, 1, rgb(220, 120, 130), M.SmoothPlastic)
+end
+function F.towel(p, b)
+	fp(p, b, 0, 4.6, 0, 2.4, 0.15, 0.3, rgb(190, 192, 196), M.Metal, false)
+	fp(p, b, 0, 3.8, -0.1, 1.8, 1.6, 0.12, rgb(120, 170, 190), M.Fabric, false)
+end
 function F.workbench(p, b)
 	fp(p, b, 0, 1.55, 0, 5, 3.1, 2.4, rgb(150, 112, 76), M.WoodPlanks, true)
 	fp(p, b, 0, 5.2, 1.1, 5, 3, 0.2, rgb(110, 114, 120), M.DiamondPlate, false)
@@ -569,6 +618,7 @@ local function sideOrder(room, rng)
 	return first
 end
 
+local ART = { rgb(86, 132, 170), rgb(196, 120, 76), rgb(96, 140, 92), rgb(170, 90, 110), rgb(200, 170, 90), rgb(120, 110, 160) }
 local function furnish(h, room, rng, pal)
 	local p = h.furn
 	local function world(lcf)
@@ -594,6 +644,36 @@ local function furnish(h, room, rng, pal)
 	end
 	local function rug(cx, cz, sx, sz, col)
 		Lib.part(p, h.cf * CFrame.new(cx, room.y + 0.08, cz), V(sx, 0.05, sz), col, M.Fabric, props(true))
+	end
+	-- tableau accroché au mur (au-dessus des meubles) : seules les portes et fenêtres le bloquent
+	local function art(w, ht, ts, yc)
+		for _, s in sideOrder(room, rng) do
+			for _, t in ts do
+				local rect, lcf = wallSpot(room, s, t, w, 0.3)
+				local ok = true
+				for _, k in room.keep do
+					if ovl(rect, k) then
+						ok = false
+					end
+				end
+				for _, k in room.win do
+					if ovl(rect, k) then
+						ok = false
+					end
+				end
+				for _, k in room.art or {} do
+					if ovl(rect, k) then
+						ok = false
+					end
+				end
+				if ok then
+					room.art = room.art or {}
+					table.insert(room.art, { rect[1] - 1, rect[2] + 1, rect[3] - 1, rect[4] + 1 })
+					F.painting(p, world(lcf * CFrame.new(0, yc or 6.2, 0.05)), w, ht, Lib.pick(ART, rng))
+					return true
+				end
+			end
+		end
 	end
 	local sides = sideOrder(room, rng)
 	local kind = room.kind
@@ -624,7 +704,13 @@ local function furnish(h, room, rng, pal)
 			put(F.lamp, { lp.X - 0.6, lp.X + 0.6, lp.Z - 0.6, lp.Z + 0.6 }, CFrame.new(lp), false)
 		end
 		onWall(F.plant, 1.8, 1.8, sides, { 0, 1 }, false)
-		onWall(F.dresser, 4, 1.8, sides, { 0.5, 0.25, 0.75 }, false)
+		if rng:NextNumber() < 0.6 then
+			onWall(F.bookshelf, 4.4, 1.4, sides, { 0.15, 0.85, 0.5 }, true)
+		else
+			onWall(F.dresser, 4, 1.8, sides, { 0.5, 0.25, 0.75 }, false)
+		end
+		art(4.5, 3, { 0.5, 0.3, 0.7 })
+		art(2.6, 3.2, { 0.2, 0.8 })
 	elseif kind == "kitchen" or kind == "dining" then
 		if kind == "kitchen" then
 			local ok = false
@@ -683,7 +769,8 @@ local function furnish(h, room, rng, pal)
 			end
 		end
 		if kind == "dining" then
-			onWall(F.dresser, 4, 1.8, sides, { 0.5, 0.3, 0.7 }, false)
+			onWall(F.sideboard, 5, 1.8, sides, { 0.5, 0.3, 0.7 }, false)
+			art(4, 2.8, { 0.5, 0.3, 0.7 })
 		end
 		onWall(F.plant, 1.8, 1.8, sides, { 0, 1 }, false)
 	elseif kind == "bedroom" then
@@ -706,13 +793,20 @@ local function furnish(h, room, rng, pal)
 		end
 		onWall(F.wardrobe, 5, 2.4, sides, { 0.5, 0.2, 0.8, 0, 1 }, true)
 		onWall(F.desk, 4.5, 4, sides, { 0.5, 0.3, 0.7, 0, 1 }, false)
+		if not onWall(F.dresser, 4, 1.8, sides, { 0.5, 0.3, 0.7 }, false) then
+			onWall(F.plant, 1.8, 1.8, sides, { 0, 1 }, false)
+		end
+		art(3.6, 2.6, { 0.5, 0.3, 0.7 })
 	elseif kind == "bath" then
 		onWall(F.tub, 7, 3.2, sides, { 0, 1, 0.5 }, false)
 		onWall(F.toilet, 2.2, 2.8, sides, { 0, 1, 0.5, 0.3, 0.7 }, false)
 		onWall(F.vanity, 3.6, 2, sides, { 0.5, 0.3, 0.7, 0, 1 }, false)
+		onWall(F.towel, 2.4, 0.4, sides, { 0.5, 0.2, 0.8 }, false)
 	elseif kind == "hall" then
 		local lx, lz = room.x2 - room.x1, room.z2 - room.z1
 		rug((room.x1 + room.x2) / 2, (room.z1 + room.z2) / 2, lx > lz and lx - 3 or 2.8, lx > lz and 2.8 or lz - 3, rgb(150, 120, 100))
+		art(3, 2.4, { 0.5, 0.25, 0.75 })
+		art(3, 2.4, { 0.15, 0.85 })
 	elseif kind == "garage" then
 		onWall(F.shelf, 6, 1.6, { "z2" }, { 0.5, 0.2, 0.8 }, true)
 		onWall(F.workbench, 5, 2.4, sides, { 1, 0.8, 0 }, false)
@@ -1133,10 +1227,11 @@ function K.build(parent, cf, spec, rng)
 		local ceil = r.y + FH - SL
 		local cx, cz = (r.x1 + r.x2) / 2, (r.z1 + r.z2) / 2
 		local lp = mk(h, h.inter, cx, ceil - 0.15, cz, 2.2, 0.3, 2.2, rgb(255, 246, 226), M.SmoothPlastic, true)
-		if K.LIGHTS and lp and (r.kind == "living" or r.kind == "kitchen" or r.kind == "hall") then
+		local LB = { living = 0.75, kitchen = 0.75, hall = 0.55, dining = 0.6, bedroom = 0.5, bath = 0.5 }
+		if K.LIGHTS and lp and LB[r.kind] then
 			local l = Instance.new("PointLight")
-			l.Range = 18
-			l.Brightness = 0.7
+			l.Range = r.kind == "hall" and 16 or 18
+			l.Brightness = LB[r.kind]
 			l.Color = rgb(255, 236, 206)
 			l.Shadows = false
 			l.Parent = lp
@@ -1230,17 +1325,17 @@ function K.build(parent, cf, spec, rng)
 		local wmat = (nF > 1 and pal.upperMat) or pal.mat
 		if spec.roof == "hip" then
 			if W >= D then
-				rise = hipRoof(h, h.shell, CFrame.new(0, top, D / 2), W, D, pitch, 1.4, pal)
+				rise = hipRoof(h, h.shell, CFrame.new(0, top, D / 2), W, D, pitch, 1.4, pal, true)
 			else
-				rise = hipRoof(h, h.shell, CFrame.new(0, top, D / 2) * CFrame.Angles(0, math.pi / 2, 0), D, W, pitch, 1.4, pal)
+				rise = hipRoof(h, h.shell, CFrame.new(0, top, D / 2) * CFrame.Angles(0, math.pi / 2, 0), D, W, pitch, 1.4, pal, true)
 			end
 		elseif spec.roof == "frontgable" then
-			rise = gableRoof(h, h.shell, CFrame.new(0, top, D / 2) * CFrame.Angles(0, math.pi / 2, 0), D, W, pitch, 1.2, 1, pal, wcol, wmat)
+			rise = gableRoof(h, h.shell, CFrame.new(0, top, D / 2) * CFrame.Angles(0, math.pi / 2, 0), D, W, pitch, 1.2, 1, pal, wcol, wmat, true)
 			-- œil-de-bœuf sur le pignon avant
 			mk(h, h.shell, 0, top + rise * 0.42, -0.1, 2.6, 2.6, 0.2, pal.trim, M.SmoothPlastic, true)
 			mk(h, h.shell, 0, top + rise * 0.42, -0.15, 1.9, 1.9, 0.2, GLASS, M.Glass, true)
 		else
-			rise = gableRoof(h, h.shell, CFrame.new(0, top, D / 2), W, D, pitch, 1.2, 1, pal, wcol, wmat)
+			rise = gableRoof(h, h.shell, CFrame.new(0, top, D / 2), W, D, pitch, 1.2, 1, pal, wcol, wmat, true)
 		end
 		if spec.chimney then
 			local cx = (spec.roof == "frontgable") and (W / 4) * -ds or (W / 2 - 3.5) * -ds
@@ -1299,7 +1394,7 @@ function K.build(parent, cf, spec, rng)
 		ginfo = { x = gcx, w = gDoorW, z0 = gz0 }
 	end
 	-- mobilier
-	if K.FURNITURE then
+	if K.FURNITURE or spec.furnish then
 		for _, r in rooms do
 			furnish(h, r, rng, pal)
 		end

@@ -222,6 +222,13 @@ local function buildLot(dirs, lotCf, lw, ld, typ, tag, extraSetback, lastPal)
 		hx = (rng:NextNumber() < 0.5 and -1 or 1) * rng:NextNumber(2, 4)
 	end
 	spec.name = tag .. "_" .. typ
+	-- maison modèle (meublée) : première maison à étage avec garage ; HK.FURNISH_ALL meuble toutes les maisons
+	if HK.FURNISH_ALL or (not Lib.MODEL_HOUSE and typ == "twostory" and spec.garage) then
+		spec.furnish = true
+		if not HK.FURNISH_ALL then
+			Lib.MODEL_HOUSE = spec.name
+		end
+	end
 	local hm, info = HK.build(dirs.houses[T.cat], lotCf * CFrame.new(hx, 0, setback), spec, rng)
 	local w, depth = spec.W, spec.D
 	local garden = Lib.model(dirs.gardens, tag)
@@ -459,6 +466,7 @@ local function cleanLot(dirs, tag)
 end
 
 return function()
+	Lib.MODEL_HOUSE = nil
 	local root = Lib.path("ResidentialDistrict")
 	local roads = Lib.path("Roads")
 	roadOv.FilterDescendantsInstances = { roads.Asphalt, roads.Intersections, roads.Roundabouts, roads.Sidewalks }
@@ -566,5 +574,5 @@ return function()
 	for k, v in used do
 		table.insert(kinds, k .. "=" .. v)
 	end
-	return ("maisons : %d (%s), %d éléments retirés des routes (%s)"):format(n, table.concat(kinds, ", "), fixed, table.concat(log, ", "))
+	return ("modèle=" .. tostring(Lib.MODEL_HOUSE) .. " ; maisons : %d (%s), %d éléments retirés des routes (%s)"):format(n, table.concat(kinds, ", "), fixed, table.concat(log, ", "))
 end
