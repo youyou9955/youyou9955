@@ -22,6 +22,7 @@ require(game.ServerStorage.MapLoader:Clone())("<sha>", { "00_Setup", "01_Terrain
 | 09t_Tunnel | tunnel du Col (à relancer après toute régénération du terrain, qui le rebouche) |
 | 10_Nature | forêts et arbres hors ville, pins des collines, voitures-jouets dans les parkings |
 | 11_Polish | finitions (vitrages variés, toit du parking, cours industrielles, lettres WRONG WAY) |
+| 12_MeshyHouses | remplace les maisons du quartier résidentiel par 96 maisons Meshy AI (18 modèles importés dans ReplicatedStorage.Assets.Houses), avec jardins, clôtures, allées, boîtes aux lettres et arbres variés |
 
 Coordonnées : X ouest → est, Z nord → sud, sol à y = 0, dessus de chaussée 0,2, trottoirs 0,8.
 Aucun script de gameplay n'est créé : la map est uniquement du décor ancré.
