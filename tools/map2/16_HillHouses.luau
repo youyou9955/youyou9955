@@ -68,7 +68,7 @@ return function()
 		end
 		local pz0 = -17
 		Lib.part(yard, cf * CFrame.new(hx, 0.05, (pz0 + fz) / 2), V(4, 0.6, fz - pz0), rgb(200, 190, 176), M.Pavement, { Name = "Path" })
-		Lib.mailbox(yard, cf * CFrame.new(hx + (hx > 0 and -4.2 or 4.2), 0, pz0 + 2))
+		Lib.mailbox(yard, cf * CFrame.new(hx + (hx > 0 and -5.6 or 5.6), 0, pz0 + 1.5))
 		-- ouverture dans la glissière / le mur de soutènement au bout de l'allée (accès à pied), marches si besoin
 		local op = OverlapParams.new()
 		op.FilterType = Enum.RaycastFilterType.Include
