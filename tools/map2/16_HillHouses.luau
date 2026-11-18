@@ -80,6 +80,19 @@ return function()
 				cut += 1
 			end
 		end
+		-- éléments décoratifs non interrogeables (bande rouge, chaperon) dans la même ouverture
+		local boxCf = cf * CFrame.new(hx, 1, pz0 - 2.5)
+		for _, g in Lib.path("Roads"):GetDescendants() do
+			if g:IsA("BasePart") and not g.CanQuery and math.min(g.Size.X, g.Size.Z) <= 2.3 and math.max(g.Size.X, g.Size.Z) > 3 then
+				local lp = boxCf:PointToObjectSpace(g.Position)
+				if math.abs(lp.X) < 2.75 + math.max(g.Size.X, g.Size.Z) / 2 and math.abs(lp.Z) < 4.5 and math.abs(lp.Y) < 6 then
+					local rail = g.CFrame
+					-- seulement si la pièce traverse l'ouverture (même alignement qu'une glissière coupée)
+					g:Destroy()
+					cut += 1
+				end
+			end
+		end
 		local rp = RaycastParams.new()
 		rp.FilterType = Enum.RaycastFilterType.Include
 		rp.FilterDescendantsInstances = { Lib.path("Roads") }
