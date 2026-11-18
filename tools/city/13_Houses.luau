@@ -46,7 +46,7 @@ end
 ---------------------------------------------------------------- Meubles
 local function furn(parent, cf, name, lx, ly, lz, face, target, mode, collide)
 	-- série réaliste en priorité (passe 14)
-	local src = city:FindFirstChild(name .. "R") or city:FindFirstChild(name)
+	local src = city:FindFirstChild(name .. "L") or city:FindFirstChild(name .. "R") or city:FindFirstChild(name)
 	if not src then
 		return
 	end
