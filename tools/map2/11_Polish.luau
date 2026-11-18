@@ -151,29 +151,46 @@ return function()
 		ov.FilterType = Enum.RaycastFilterType.Exclude
 		ov.FilterDescendantsInstances = { workspace.Terrain }
 		local text = "WRONG WAY"
-		for _, r in { 165, 150, 180, 195, 135 } do
-			local cfs, ok = {}, true
-			for k = 1, #text do
-				local ch = text:sub(k, k)
-				if ch ~= " " then
-					local z = hill.c.Z + (k - 5) * 22
-					local x = hill.c.X + math.sqrt(math.max(r * r - (z - hill.c.Z) ^ 2, 0))
-					local hit = workspace:Raycast(V(x, 400, z), V(0, -800, 0), tp)
-					local y = hit and hit.Position.Y or 0
-					local cf = CFrame.lookAt(V(x, y + 10, z), V(x + 10, y + 12, z))
-					for _, p in workspace:GetPartBoundsInBox(cf, V(20, 22, 6), ov) do
-						local soft = p:IsDescendantOf(Lib.path("Vegetation")) or (p.Parent and p.Parent.Name == "Rock")
-						if not soft then
-							ok = false
+		local cfs, ok = {}, false
+		local angles = { 0 }
+		for d = 4, 120, 4 do
+			table.insert(angles, d)
+			table.insert(angles, -d)
+		end
+		for _, r in { 145, 140, 150, 235, 228 } do
+			for _, a0 in angles do
+				cfs, ok = {}, true
+				for k = 1, #text do
+					local ch = text:sub(k, k)
+					if ch ~= " " then
+						local a = math.rad(a0) - (k - 5) * 22 / r
+						local x, z = hill.c.X + math.cos(a) * r, hill.c.Z + math.sin(a) * r
+						local hit = workspace:Raycast(V(x, 400, z), V(0, -800, 0), tp)
+						local y = hit and hit.Position.Y or 0
+						local out = V(math.cos(a), 0, math.sin(a))
+						local cf = CFrame.lookAt(V(x, y + 10, z), V(x, y + 10, z) + out + V(0, 0.15, 0))
+						for _, p in workspace:GetPartBoundsInBox(cf, V(19, 22, 4), ov) do
+							local soft = p:IsDescendantOf(Lib.path("Vegetation")) or (p.Parent and p.Parent.Name == "Rock")
+							if not soft then
+								ok = false
+								break
+							end
+						end
+						if not ok then
 							break
 						end
+						table.insert(cfs, { cf, ch })
 					end
-					if not ok then
-						break
-					end
-					table.insert(cfs, { cf, ch })
+				end
+				if ok then
+					break
 				end
 			end
+			if ok then
+				break
+			end
+		end
+		do
 			if ok then
 				for _, e in cfs do
 					-- dégage arbres et rochers derrière la lettre
@@ -187,7 +204,6 @@ return function()
 					Lib.label(lp, Enum.NormalId.Front, e[2], Lib.rgb(230, 50, 50), nil, Enum.Font.FredokaOne, false, 12)
 					nl += 1
 				end
-				break
 			end
 		end
 	end
