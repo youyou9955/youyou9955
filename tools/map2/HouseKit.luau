@@ -540,6 +540,10 @@ function F.shelf(p, b)
 	fp(p, b, 1.5, 1.6, -0.2, 2.2, 1.6, 1.2, rgb(196, 150, 96), M.Cardboard, false)
 end
 function F.painting(p, b, w, ht, col)
+	local pm = Instance.new("Model")
+	pm.Name = "Painting"
+	pm.Parent = p
+	p = pm
 	fp(p, b, 0, 0, 0, w + 0.4, ht + 0.4, 0.18, rgb(60, 46, 36), M.Wood, false)
 	fp(p, b, 0, 0, -0.05, w, ht, 0.12, rgb(246, 242, 232), M.SmoothPlastic, false)
 	fp(p, b, 0, -ht * 0.12, -0.12, w * 0.8, ht * 0.5, 0.04, col, M.SmoothPlastic, false)
@@ -1445,6 +1449,30 @@ function K.build(parent, cf, spec, rng)
 	model:SetAttribute("Palette", spec.pal)
 	model:SetAttribute("Floors", nF)
 	model.Parent = parent
+	-- tableaux : retirer ceux qui ne sont pas accrochés à un mur (côté de pièce ouvert)
+	do
+		local op = OverlapParams.new()
+		op.FilterType = Enum.RaycastFilterType.Include
+		op.FilterDescendantsInstances = { h.shell, h.inter }
+		for _, pm in h.furn:GetChildren() do
+			if pm:IsA("Model") and pm.Name == "Painting" then
+				local fr = pm:FindFirstChildWhichIsA("BasePart")
+				if fr then
+					local hits = workspace:GetPartBoundsInBox(fr.CFrame * CFrame.new(0, 0, 0.4), V(fr.Size.X * 0.5, fr.Size.Y * 0.5, 0.4), op)
+					local onWall = false
+					for _, q in hits do
+						if q.CanCollide and q.Transparency < 0.5 then
+							onWall = true
+							break
+						end
+					end
+					if not onWall then
+						pm:Destroy()
+					end
+				end
+			end
+		end
+	end
 	return model, { W = W, D = D, doorX = doorX, garage = ginfo, top = top + rise, porch = spec.porch }
 end
 
