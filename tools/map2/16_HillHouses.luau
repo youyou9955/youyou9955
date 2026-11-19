@@ -45,6 +45,23 @@ return function()
 		spec.furnish = workspace:GetAttribute("FurnishAll") and true or nil
 		local fz = pad.plateau and -12 or -8 -- façade
 		local hm = HK.build(root, cf * CFrame.new(0, 0, fz), spec, rng)
+		-- plus grande possible sans empiéter sur un monument voisin (belvédère...)
+		local function clash(m)
+			local op = OverlapParams.new()
+			op.FilterType = Enum.RaycastFilterType.Include
+			op.FilterDescendantsInstances = { Lib.path("Landmarks") }
+			for _, p in m.Shell:GetChildren() do
+				if p:IsA("BasePart") and #workspace:GetPartsInPart(p, op) > 0 then
+					return true
+				end
+			end
+			return false
+		end
+		while clash(hm) and spec.W > 24 do
+			hm:Destroy()
+			spec.W -= 2
+			hm = HK.build(root, cf * CFrame.new(0, 0, fz), spec, rng)
+		end
 		-- socle : dalle sur un massif en pierre qui descend dans la pente
 		local z0, z1 = fz - (pad.plateau and 9 or 5), fz + spec.D + 3
 		local dz, cz = z1 - z0, (z0 + z1) / 2
