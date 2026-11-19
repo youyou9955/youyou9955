@@ -30,9 +30,9 @@ return function()
 		local cf = CFrame.lookAt(base, base + pad.face) -- -Z local = vers la route
 		local spec
 		if pad.plateau then
-			spec = { type = "twostory", floors = 2, W = rng:NextInteger(26, 28), D = 35, roof = pick({ "gable", "hip", "frontgable" }), porch = true, porchW = 10, chimney = rng:NextNumber() < 0.6 }
+			spec = { type = "twostory", floors = 2, W = rng:NextInteger(32, 34), D = 41, roof = pick({ "gable", "hip", "frontgable" }), porch = true, porchW = 10, chimney = rng:NextNumber() < 0.6 }
 		else
-			spec = { type = "small", floors = 1, W = rng:NextInteger(22, 24), D = 26, roof = pick({ "gable", "frontgable", "hip" }), porch = false, chimney = rng:NextNumber() < 0.5 }
+			spec = { type = "small", floors = 1, W = rng:NextInteger(27, 29), D = 31, roof = pick({ "gable", "frontgable", "hip" }), porch = false, chimney = rng:NextNumber() < 0.5 }
 		end
 		spec.doorSide = rng:NextNumber() < 0.5 and -1 or 1
 		spec.pitch = spec.roof == "hip" and 0.45 or nil

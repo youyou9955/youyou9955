@@ -10,15 +10,21 @@ local V, rgb, M, C = Lib.V, Lib.rgb, Lib.M, Lib.C
 
 local rng = Random.new(1313)
 
+-- tailles agrandies (intérieurs plus spacieux) ; 12 types dans le même style réaliste
 local TYPES = {
-	classic = { cat = "ClassicHouses", floors = { 1 }, W = { 30, 34 }, D = { 30, 33 }, roofs = { "gable", "gable", "frontgable" }, garage = 0.65, porch = 0.7, chimney = 0.5, pals = { "white", "beige", "grey", "brick", "brownbrick", "taupe" } },
-	twostory = { cat = "TwoStoryHouses", floors = { 2 }, W = { 28, 32 }, D = { 35, 36 }, roofs = { "gable", "frontgable" }, garage = 0.75, porch = 0.6, chimney = 0.4, pals = { "white", "brickup", "grey", "beige", "taupe", "brownbrick" } },
-	villa = { cat = "Villas", floors = { 2 }, W = { 38, 42 }, D = { 36, 38 }, roofs = { "gable" }, garage = 0, porch = 1, porchW = 18, chimney = 0.6, pals = { "stucco", "stone", "brick", "white" } },
-	modern = { cat = "ModernHouses", floors = { 1, 2 }, W = { 30, 36 }, D = { 30, 33 }, roofs = { "flat" }, garage = 0.7, porch = 0, chimney = 0, pals = { "modernwhite", "moderngrey", "modernwood" } },
-	colonial = { cat = "TwoStoryHouses", floors = { 2 }, W = { 34, 37 }, D = { 35, 36 }, roofs = { "hip" }, garage = 0.4, porch = 1, porchW = 10, portico = true, centerDoor = true, chimney = 0.7, pals = { "cream", "white", "brick", "slate" } },
-	ranch = { cat = "ClassicHouses", floors = { 1 }, W = { 34, 38 }, D = { 28, 30 }, roofs = { "hip" }, pitch = 0.42, garage = 0.6, porch = 0.4, chimney = 0.3, pals = { "beige", "brownbrick", "taupe", "slate", "grey" } },
-	farmhouse = { cat = "TwoStoryHouses", floors = { 2 }, W = { 30, 32 }, D = { 35, 36 }, roofs = { "frontgable", "gable" }, garage = 0.5, porch = 1, porchFull = true, chimney = 0.3, pals = { "farm" } },
-	small = { cat = "SmallHouses", floors = { 1 }, W = { 22, 25 }, D = { 26, 28 }, roofs = { "gable", "frontgable" }, garage = 0, porch = 0.8, porchW = 9, chimney = 0.5, pals = { "white", "beige", "grey", "wood", "taupe" } },
+	classic = { cat = "ClassicHouses", floors = { 1 }, W = { 38, 43 }, D = { 38, 41 }, roofs = { "gable", "gable", "frontgable" }, garage = 0.65, porch = 0.7, chimney = 0.5, pals = { "white", "beige", "grey", "brick", "brownbrick", "taupe", "sage" } },
+	twostory = { cat = "TwoStoryHouses", floors = { 2 }, W = { 36, 41 }, D = { 42, 45 }, roofs = { "gable", "frontgable" }, garage = 0.75, porch = 0.6, chimney = 0.4, pals = { "white", "brickup", "grey", "beige", "taupe", "brownbrick", "navy" } },
+	villa = { cat = "Villas", floors = { 2 }, W = { 48, 53 }, D = { 44, 47 }, roofs = { "gable", "hip" }, garage = 0, porch = 1, porchW = 22, chimney = 0.6, pals = { "stucco", "stone", "brick", "white", "sand" } },
+	modern = { cat = "ModernHouses", floors = { 1, 2 }, W = { 38, 45 }, D = { 38, 41 }, roofs = { "flat" }, garage = 0.7, porch = 0, chimney = 0, pals = { "modernwhite", "moderngrey", "modernwood" } },
+	colonial = { cat = "TwoStoryHouses", floors = { 2 }, W = { 42, 46 }, D = { 42, 44 }, roofs = { "hip" }, garage = 0.4, porch = 1, porchW = 12, portico = true, centerDoor = true, chimney = 0.7, pals = { "cream", "white", "brick", "slate", "navy" } },
+	ranch = { cat = "ClassicHouses", floors = { 1 }, W = { 44, 49 }, D = { 34, 37 }, roofs = { "hip" }, pitch = 0.42, garage = 0.6, porch = 0.4, chimney = 0.3, pals = { "beige", "brownbrick", "taupe", "slate", "grey", "sand" } },
+	farmhouse = { cat = "TwoStoryHouses", floors = { 2 }, W = { 38, 41 }, D = { 42, 44 }, roofs = { "frontgable", "gable" }, garage = 0.5, porch = 1, porchFull = true, chimney = 0.3, pals = { "farm", "sage" } },
+	small = { cat = "SmallHouses", floors = { 1 }, W = { 30, 33 }, D = { 32, 35 }, roofs = { "gable", "frontgable" }, garage = 0, porch = 0.8, porchW = 11, chimney = 0.5, pals = { "white", "beige", "grey", "wood", "taupe", "sage" } },
+	-- nouveaux modèles
+	craftsman = { cat = "ClassicHouses", floors = { 1 }, W = { 38, 42 }, D = { 40, 43 }, roofs = { "frontgable" }, pitch = 0.5, garage = 0.5, porch = 1, porchFull = true, chimney = 0.6, pals = { "wood", "sage", "taupe", "charcoal" } },
+	georgian = { cat = "TwoStoryHouses", floors = { 2 }, W = { 44, 48 }, D = { 42, 44 }, roofs = { "hip" }, pitch = 0.45, garage = 0.5, porch = 1, porchW = 9, portico = true, centerDoor = true, chimney = 0.9, pals = { "brick", "brownbrick", "sand" } },
+	cape = { cat = "TwoStoryHouses", floors = { 2 }, W = { 36, 40 }, D = { 40, 42 }, roofs = { "gable" }, pitch = 0.7, garage = 0.6, porch = 0.5, porchW = 10, centerDoor = true, chimney = 0.8, pals = { "cream", "white", "grey", "navy", "charcoal" } },
+	cottage = { cat = "SmallHouses", floors = { 1 }, W = { 32, 35 }, D = { 34, 36 }, roofs = { "hip", "frontgable" }, pitch = 0.55, garage = 0.3, porch = 1, porchW = 12, chimney = 0.9, pals = { "stucco", "stone", "sage", "cream" } },
 }
 local STYLE = {
 	ClassicHouses = { fence = { "picket", "picket", "hedge" }, mailbox = "classic", tree = "round" },
@@ -188,7 +194,7 @@ local function makeSpec(typ, lw, lastPal)
 		pitch = T.pitch,
 	}
 	if typ == "modern" and floors == 2 then
-		spec.D = 35
+		spec.D = 43
 	end
 	repeat
 		spec.pal = pick(T.pals)
@@ -499,7 +505,7 @@ return function()
 	dirs.mailboxes = Lib.folder(root, "Mailboxes")
 	dirs.trees = Lib.folder(root, "Trees")
 
-	local BAG = { "classic", "classic", "twostory", "twostory", "colonial", "ranch", "farmhouse", "villa", "modern", "modern", "small", "small" }
+	local BAG = { "classic", "twostory", "twostory", "colonial", "ranch", "farmhouse", "villa", "modern", "modern", "small", "craftsman", "georgian", "cape", "cottage" }
 	local bag, last = {}, nil
 	local function draw(lw)
 		if #bag == 0 then
@@ -527,7 +533,7 @@ return function()
 				local x1, x2 = edge(XS[i][1], XS[i][2], 1), edge(XS[i + 1][1], XS[i + 1][2], -1)
 				local z1, z2 = edge(ZS[j][1], ZS[j][2], 1), edge(ZS[j + 1][1], ZS[j + 1][2], -1)
 				local bw, bd = x2 - x1, z2 - z1
-				local nLots = math.max(2, math.floor(bw / 46))
+				local nLots = math.max(2, math.floor(bw / 58)) -- parcelles plus larges pour des maisons plus grandes
 				local lw = bw / nLots
 				local ld = bd / 2
 				for row = 0, 1 do
