@@ -35,3 +35,4 @@ require(game.ServerStorage.MapLoader:Clone())("<sha>", { "00_Setup", "01_Terrain
 
 Coordonnées : X ouest → est, Z nord → sud, sol à y = 0, dessus de chaussée 0,2, trottoirs 0,8.
 Aucun script de gameplay n'est créé : la map est uniquement du décor ancré.
+| 22_MeshyHouse | Maison test MeshyAI (une seule, au bord de la ville) : modèle Meshy importé avec la porte peinte retirée du maillage, collisions invisibles, vraie porte, intérieur 5 pièces meublé. Nécessite `{"HouseKit","22_MeshyHouse"}`. |

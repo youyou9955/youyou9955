@@ -120,7 +120,7 @@ return function()
 	local function windowsOn(list, zc, inward)
 		for _, w in list do
 			local u1, u2 = w[1], w[2]
-			bx(shell, u1, Y + WIN_V1, zc - 0.05, u2, Y + WIN_V2, zc + 0.05, GLASS, M.Glass, false, { Name = "WindowGlass", Transparency = 0.82 })
+			bx(shell, u1, Y + WIN_V1, zc - 0.05, u2, Y + WIN_V2, zc + 0.05, GLASS, M.Glass, false, { Name = "WindowGlass", Transparency = 0.6 })
 			local zi = zc + inward * (T / 2 + 0.06)
 			bx(shell, u1 - 0.35, Y + WIN_V1 - 0.35, zi - 0.08, u2 + 0.35, Y + WIN_V1, zi + 0.08 + inward * 0.5, TRIM, M.SmoothPlastic, true)
 			bx(shell, u1 - 0.35, Y + WIN_V2, zi - 0.08, u2 + 0.35, Y + WIN_V2 + 0.35, zi + 0.08, TRIM, M.SmoothPlastic, true)
